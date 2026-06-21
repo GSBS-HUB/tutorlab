@@ -1,0 +1,40 @@
+{
+  "name": "GSBS Tutor Skill Lab",
+  "short_name": "Skill Lab",
+  "description": "Five hands-on vocational labs — Web Design, Coding, Graphic Design, Marketing, Finance. Runs fully offline.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#312e81",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Web Design Lab",
+      "short_name": "Web Design",
+      "url": "/?course=web",
+      "description": "Jump straight into the Web Design lab"
+    },
+    {
+      "name": "Coding Lab",
+      "short_name": "Coding",
+      "url": "/?course=code",
+      "description": "Jump straight into the Coding lab"
+    }
+  ]
+}

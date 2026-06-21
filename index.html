@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GSBS Tutor Skill Lab</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#312e81"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Skill Lab"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--accent:#2563eb;--accent-dark:#1d4ed8;--accent-soft:#eff6ff;--ink:#0f172a;}
+    html,body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;}
+    .display{letter-spacing:-0.03em;}
+    .hero-bg{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 18%,#4c1d95 36%,#be185d 58%,#ea580c 78%,#d97706 100%);}
+    .orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.4;pointer-events:none;}
+
+    /* pills */
+    .pill{transition:all .18s ease;border:1.5px solid #e2e8f0;background:#fff;}
+    .pill:hover{transform:translateY(-2px);border-color:#cbd5e1;}
+    .pill.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 8px 20px -8px var(--accent);}
+    .pill.active .pill-tag{color:rgba(255,255,255,.8);}
+    .pill .check{display:none;}
+    .pill.cleared .check{display:inline;}
+    .pill.locked{opacity:.5;cursor:not-allowed;}
+    .pill.locked:hover{transform:none;}
+    .pill-web.active{background:#2563eb;border-color:#2563eb;box-shadow:0 8px 20px -8px #2563eb;}
+    .pill-code.active{background:#7c3aed;border-color:#7c3aed;box-shadow:0 8px 20px -8px #7c3aed;}
+    .pill-design.active{background:#db2777;border-color:#db2777;box-shadow:0 8px 20px -8px #db2777;}
+    .pill-social.active{background:#ea580c;border-color:#ea580c;box-shadow:0 8px 20px -8px #ea580c;}
+    .pill-finance.active{background:#059669;border-color:#059669;box-shadow:0 8px 20px -8px #059669;}
+
+    /* subtabs */
+    .subtab{transition:all .15s ease;border-bottom:2.5px solid transparent;color:#64748b;}
+    .subtab:hover{color:var(--ink);}
+    .subtab.active{color:var(--accent-dark);border-color:var(--accent);}
+
+    /* buttons */
+    .action-btn{background:var(--accent);transition:all .15s ease;box-shadow:0 12px 28px -12px var(--accent);}
+    .action-btn:hover{background:var(--accent-dark);transform:translateY(-1px);}
+    .action-btn:active{transform:translateY(0);}
+    .save-btn{background:#059669;transition:all .15s ease;}
+    .save-btn:hover{background:#047857;transform:translateY(-1px);}
+    .save-btn:disabled{background:#94a3b8;cursor:not-allowed;transform:none;}
+
+    /* fields */
+    .field{transition:border-color .15s ease,box-shadow .15s ease;}
+    .field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+    .accent-bar{background:var(--accent);}
+    .accent-chip{background:var(--accent-soft);color:var(--accent-dark);}
+
+    /* blocks */
+    .block-chip{transition:transform .1s ease,box-shadow .1s ease;cursor:pointer;}
+    .block-chip:hover{transform:translateY(-3px);box-shadow:0 6px 16px -4px rgba(0,0,0,.25);}
+    .block-chip:active{transform:scale(.94);}
+    .b-amber{background:#fde68a;color:#92400e;}
+    .b-sky{background:#bae6fd;color:#075985;}
+    .b-violet{background:#ddd6fe;color:#5b21b6;}
+    .b-slate{background:#e2e8f0;color:#334155;}
+    .b-green{background:#bbf7d0;color:#065f46;}
+    .b-rose{background:#fecdd3;color:#9f1239;}
+    .stage-chip{animation:pop .18s ease;}
+
+    /* choice */
+    .choice-card{transition:transform .12s ease,box-shadow .12s ease;cursor:pointer;}
+    .choice-card:hover{transform:translateY(-3px);}
+    .choice-card.sel{box-shadow:0 0 0 3px var(--accent-soft),0 0 0 5px var(--accent);}
+
+    /* code editor */
+    .code-editor{background:#0b1220;}
+    .code-gutter{background:#0b1220;color:#475569;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.7;min-width:2.4rem;overflow:hidden;white-space:pre;}
+    .code-area{background:#0b1220;color:#e2e8f0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.7;}
+    .code-area::placeholder{color:#475569;}
+    .console-out{background:#0b1220;color:#86efac;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+
+    /* phone */
+    .phone-frame{background:#1e293b;border-radius:24px;padding:10px;border:3px solid #334155;}
+    .phone-screen{background:#fff;border-radius:16px;overflow:hidden;min-height:130px;}
+
+    /* money */
+    .money-pile{transition:all .15s ease;cursor:pointer;}
+    .money-pile:hover{transform:translateY(-4px);}
+    .money-pile.sel{box-shadow:0 0 0 3px #a7f3d0,0 0 0 5px #059669;}
+
+    /* XP bar */
+    .xp-bar-inner{transition:width .6s cubic-bezier(.34,1.56,.64,1);}
+
+    /* streak flame */
+    @keyframes flicker{0%,100%{transform:scale(1) rotate(-2deg);}50%{transform:scale(1.1) rotate(2deg);}}
+    .flame{display:inline-block;animation:flicker .8s ease-in-out infinite;}
+
+    /* badges */
+    .badge-item{transition:all .2s ease;}
+    .badge-item.locked-badge{filter:grayscale(1);opacity:.35;}
+    .badge-item:hover{transform:scale(1.1);}
+
+    /* confetti particle */
+    .confetti-p{position:fixed;pointer-events:none;z-index:9999;border-radius:3px;animation:fall linear forwards;}
+    @keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+    /* mascot */
+    .mascot{transition:all .3s ease;display:inline-block;}
+    @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+    @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+    .mascot-happy{animation:bounce .5s ease 2;}
+    .mascot-sad{animation:shake .4s ease 2;}
+
+    /* XP popup */
+    .xp-popup{position:fixed;pointer-events:none;z-index:9998;font-weight:800;font-size:18px;animation:xpFly .9s ease forwards;}
+    @keyframes xpFly{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(1.3);}}
+
+    /* daily badge */
+    .daily-glow{box-shadow:0 0 0 3px #fbbf24,0 0 20px 4px #fcd34d;animation:pulse-gold 2s ease-in-out infinite;}
+    @keyframes pulse-gold{0%,100%{box-shadow:0 0 0 3px #fbbf24,0 0 12px 2px #fcd34d;}50%{box-shadow:0 0 0 4px #f59e0b,0 0 24px 6px #fde68a;}}
+
+    /* leaderboard */
+    .lb-row{transition:background .15s ease;}
+    .lb-row:hover{background:#f8fafc;}
+    .lb-me{background:#eff6ff!important;border-left:3px solid #2563eb;}
+
+    /* feedback */
+    .banner{animation:slideOpen .28s ease;}
+    @keyframes slideOpen{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pop{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
+
+    /* chatbot */
+    #chatPanel{box-shadow:0 24px 60px -20px rgba(15,23,42,.45);}
+    .chat-bubble-bot{background:#e2e8f0;color:#0f172a;}
+    .chat-bubble-user{background:var(--accent);color:#fff;}
+    .chat-chip{border:1.5px solid #e2e8f0;transition:all .15s ease;}
+    .chat-chip:hover{border-color:var(--accent);color:var(--accent-dark);}
+    #chatFab{transition:transform .15s ease;}
+    #chatFab:hover{transform:scale(1.1);}
+    .dash-row:hover{background:#f8fafc;}
+    .badge-pass{background:#d1fae5;color:#065f46;}
+    .badge-fail{background:#fee2e2;color:#991b1b;}
+    .no-scrollbar::-webkit-scrollbar{display:none;}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+  </style>
+</head>
+<body class="text-slate-900">
+
+<!-- ═══ GATE ═══ -->
+<div id="gateWrap" class="hero-bg relative min-h-screen flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
+  <div class="orb w-72 h-72 bg-yellow-400 top-[-60px] left-[-60px]"></div>
+  <div class="orb w-96 h-96 bg-pink-500 bottom-[-80px] right-[-80px]"></div>
+  <div class="orb w-64 h-64 bg-sky-400 top-[30%] right-[5%]"></div>
+  <div class="orb w-56 h-56 bg-emerald-400 bottom-[15%] left-[5%]"></div>
+  <div class="relative z-10 text-center max-w-2xl mx-auto">
+    <div class="text-6xl mb-4" id="gate-mascot">🤖</div>
+    <div class="inline-flex items-center gap-2 bg-white/15 border border-white/25 text-white text-xs font-semibold px-4 py-2 rounded-full mb-5">
+      <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>GSBS Tutor · Practical Section
+    </div>
+    <h1 class="display text-4xl sm:text-6xl font-extrabold text-white leading-[1.05] mb-4">Welcome to<br/><span class="text-transparent bg-clip-text" style="background:linear-gradient(90deg,#fde68a,#fb7185,#a78bfa)">Skill Lab</span></h1>
+    <p class="text-white/75 text-base sm:text-lg mb-6 max-w-lg mx-auto leading-relaxed">Earn XP, unlock badges, climb the leaderboard — and learn real vocational skills while you do it.</p>
+    <div class="flex flex-wrap justify-center gap-2 mb-8">
+      <span class="bg-blue-500/30 border border-blue-400/40 text-blue-100 text-xs font-semibold px-3 py-1.5 rounded-full">💻 Web Design</span>
+      <span class="bg-violet-500/30 border border-violet-400/40 text-violet-100 text-xs font-semibold px-3 py-1.5 rounded-full">🤖 Coding</span>
+      <span class="bg-pink-500/30 border border-pink-400/40 text-pink-100 text-xs font-semibold px-3 py-1.5 rounded-full">🎨 Graphic Design</span>
+      <span class="bg-orange-500/30 border border-orange-400/40 text-orange-100 text-xs font-semibold px-3 py-1.5 rounded-full">📢 Marketing</span>
+      <span class="bg-emerald-500/30 border border-emerald-400/40 text-emerald-100 text-xs font-semibold px-3 py-1.5 rounded-full">💰 Finance</span>
+    </div>
+    <div class="bg-white/10 border border-white/20 rounded-3xl p-8 text-white shadow-2xl max-w-md mx-auto">
+      <div class="h-14 w-14 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-4 text-2xl">🔒</div>
+      <h2 class="display text-xl font-extrabold mb-2">Access via your dashboard</h2>
+      <p class="text-white/75 text-sm leading-relaxed mb-6">Open Skill Lab from your GSBS Tutor student dashboard. You'll sign in automatically — your level and course are set for you.</p>
+      <a href="https://tutor.gsbsgroup.com" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-7 py-3.5 rounded-2xl hover:bg-slate-100 transition shadow-lg">Go to GSBS Tutor →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ═══ -->
+<div id="appShell" class="hidden">
+  <!-- top bar -->
+  <div class="hero-bg relative overflow-hidden">
+    <div class="orb w-64 h-64 bg-yellow-400 top-[-40px] left-[-40px] opacity-30"></div>
+    <div class="orb w-64 h-64 bg-pink-500 bottom-[-40px] right-[-20px] opacity-30"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 relative z-10">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl" id="header-mascot">🤖</div>
+          <div>
+            <p class="text-white font-extrabold text-sm leading-none">GSBS Tutor Skill Lab</p>
+            <p id="heroSub" class="text-white/65 text-xs mt-0.5 leading-none"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          <!-- streak -->
+          <div id="streakBox" class="hidden bg-white/15 border border-white/25 rounded-full px-3 py-1.5 flex items-center gap-1.5">
+            <span class="flame text-base">🔥</span>
+            <span id="streakCount" class="text-white font-extrabold text-sm">0</span>
+            <span class="text-white/60 text-xs">streak</span>
+          </div>
+          <!-- XP -->
+          <div id="xpBox" class="hidden bg-white/15 border border-white/25 rounded-full px-3 py-1.5 flex items-center gap-1.5">
+            <span class="text-yellow-300 text-sm">⚡</span>
+            <span id="xpCount" class="text-white font-extrabold text-sm">0</span>
+            <span class="text-white/60 text-xs">XP</span>
+          </div>
+          <!-- level -->
+          <div id="lvlBox" class="hidden bg-white/15 border border-white/25 rounded-full px-3 py-1.5 flex items-center gap-1.5">
+            <span class="text-white/60 text-xs">Lv</span>
+            <span id="lvlNum" class="text-white font-extrabold text-sm">1</span>
+          </div>
+          <button id="dashBtn" class="hidden text-xs font-semibold bg-white/15 border border-white/25 text-white rounded-full px-3 py-1.5 hover:bg-white/25 transition">📊 My Work</button>
+          <button id="lbBtn" class="hidden text-xs font-semibold bg-white/15 border border-white/25 text-white rounded-full px-3 py-1.5 hover:bg-white/25 transition">🏆 Board</button>
+          <div id="levelBadge" class="hidden text-xs font-semibold bg-white/20 border border-white/30 text-white rounded-full px-3 py-1.5"></div>
+          <div id="progressBox" class="text-right hidden">
+            <div class="display text-xl font-extrabold leading-none text-white"><span id="progressCount">0</span><span class="opacity-40" id="progressDenom">/5</span></div>
+            <p class="text-[10px] uppercase tracking-wider text-white/50 mt-0.5 leading-none">cleared</p>
+          </div>
+        </div>
+      </div>
+      <!-- XP bar -->
+      <div id="xpBarWrap" class="hidden mt-3">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-white/60 text-[10px] font-semibold uppercase tracking-wider">Level <span id="xpBarLvl">1</span> → <span id="xpBarNext">2</span></span>
+          <span id="xpBarLabel" class="text-white/60 text-[10px] font-semibold">0 / 100 XP</span>
+        </div>
+        <div class="h-2 bg-white/15 rounded-full overflow-hidden">
+          <div id="xpBar" class="xp-bar-inner h-full rounded-full" style="background:linear-gradient(90deg,#fde68a,#fb923c);width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- subject nav -->
+  <nav id="navWrap" class="max-w-6xl mx-auto px-4 sm:px-6 mt-4 hidden">
+    <div id="labNav" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1"></div>
+  </nav>
+
+  <!-- achievements strip -->
+  <div id="achieveStrip" class="max-w-6xl mx-auto px-4 sm:px-6 mt-3 hidden">
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1" id="badgeRow"></div>
+  </div>
+
+  <!-- daily challenge banner -->
+  <div id="dailyBanner" class="max-w-6xl mx-auto px-4 sm:px-6 mt-3 hidden">
+    <div class="daily-glow bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+      <span class="text-2xl">⭐</span>
+      <div class="flex-1">
+        <p class="font-extrabold text-amber-900 text-sm">Daily Challenge</p>
+        <p id="dailyText" class="text-amber-700 text-xs mt-0.5"></p>
+      </div>
+      <span class="text-xs font-bold text-amber-600 bg-amber-100 px-2.5 py-1 rounded-full">+50 XP bonus</span>
+    </div>
+  </div>
+
+  <main id="stage" class="max-w-6xl mx-auto px-4 sm:px-6 mt-4 pb-16"></main>
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 pb-10 text-center">
+    <p class="text-xs text-slate-400">All grading runs on your device. Work saved to dashboard when you pass. Zero extra data.</p>
+  </footer>
+</div>
+
+<script>
+/* ========================================================
+   LABS DATA
+   ======================================================== */
+const LABS=[
+  {id:"web",emoji:"💻",name:"Web Design",tag:"HTML / CSS",accent:"#2563eb",accentDark:"#1d4ed8",accentSoft:"#eff6ff",
+   principle:"Think of a web page like a market stall. The &lt;h1&gt; heading is the big signboard that tells everyone what you sell. Open with &lt;h1&gt;, close with &lt;/h1&gt; — the words between become the boldest text on the page. Google reads it first.",
+   career:"Freelance on Upwork and Fiverr for clients worldwide. Join Lagos tech hubs in Yaba. Work remotely from anywhere. Every business needs a website.",
+   earnings:"Junior devs earn <strong>₦150k–₦400k/month</strong>. Remote projects pay <strong>$1k–$5k+ each</strong>. Top freelancers clear <strong>$50k+ a year</strong>.",
+   challenge:{primary:"Tap &lt;h1&gt;, then Hello World, then &lt;/h1&gt; — watch it appear live! Then press Run.",secondary:"Type &lt;h1&gt;Hello World&lt;/h1&gt; in the editor — the live preview updates every keystroke!"}},
+  {id:"code",emoji:"🤖",name:"Coding",tag:"Logic Basics",accent:"#7c3aed",accentDark:"#6d28d9",accentSoft:"#f5f3ff",
+   principle:"A loop lets you say 'do this 20 times' instead of repeating instructions. Python's <em>for i in range(5)</em> runs a task five times, counting 0,1,2,3,4. The computer never gets bored.",
+   career:"Work at Flutterwave, Paystack, telecoms, game studios. Code remotely for US/European companies. Your office = anywhere with power and data.",
+   earnings:"Junior Python devs earn <strong>₦200k–₦500k/month</strong>. Remote roles pay <strong>$1.5k–$8k/month</strong>. Senior engineers earn <strong>$100k+ a year</strong>.",
+   challenge:{primary:"Tap 'When Clicked' then 'Move Forward' — watch the robot walk! Then press Run.",secondary:"Type a for loop → press ▶ Run to see it count in the console!"}},
+  {id:"design",emoji:"🎨",name:"Graphic Design",tag:"Layout Rules",accent:"#db2777",accentDark:"#be185d",accentSoft:"#fdf2f8",
+   principle:"People read flyers on danfo for one second. If text blends into the background, your message vanishes. Strong contrast — dark on light, or light on dark — makes words jump out even in direct sunlight.",
+   career:"Create flyers, logos, social posts. Freelance on Fiverr. Sell through Instagram and WhatsApp. Work remotely for global clients from any phone.",
+   earnings:"Designers earn <strong>₦100k–₦350k/month</strong>. Logos fetch <strong>₦50k–₦300k each</strong>. Remote clients pay <strong>$500–$3k per project</strong>.",
+   challenge:{primary:"Tap colour cards and watch the flyer change live! Pick the most readable one.",secondary:"Drag the colour pickers — the flyer updates live. Push the meter to 4.5:1 or higher!"}},
+  {id:"social",emoji:"📢",name:"Marketing",tag:"Ad Copywriting",accent:"#ea580c",accentDark:"#c2410c",accentSoft:"#fff7ed",
+   principle:"A market seller shouts 'buy one get one FREE!' to stop you walking past. Online, hook words — free, discount, best, promo — grab a scrolling thumb. No hook = no stop = no sale.",
+   career:"Manage social pages for shops and brands. Freelance globally. Join an agency. Or grow your own Instagram/WhatsApp store — just a phone and good words.",
+   earnings:"Social managers earn <strong>₦100k–₦400k/month</strong>. Copywriters charge <strong>$20–$200 per advert</strong>. Expert marketers earn <strong>$3k+/month</strong>.",
+   challenge:{primary:"Tap a headline and watch it appear on the phone screen! Pick the one that sells.",secondary:"Write a 3-sentence ad — watch the hook highlighter light up your value words live!"}},
+  {id:"finance",emoji:"💰",name:"Finance",tag:"Budget Calculation",accent:"#059669",accentDark:"#047857",accentSoft:"#ecfdf5",
+   principle:"Your income is a loaf of bread. Slice one piece off and store it before you eat — that's savings. Smart savers keep 10% first. One tenth = one slice out of every ten, every time money comes in.",
+   career:"Bookkeeper, bank officer, fintech analyst, small business manager. Money skills protect everything else you build.",
+   earnings:"Bookkeepers earn <strong>₦120k–₦400k/month</strong>. Saving 10% early can grow into <strong>millions</strong> through compound interest.",
+   challenge:{primary:"Tap the Naira pile that equals 10% of ₦50,000 — watch your savings update live!",secondary:"Fill the budget grid — the calculator updates live as you type every number!"}}
+];
+
+/* ========================================================
+   GAMIFICATION STATE (localStorage)
+   ======================================================== */
+function gs(key,def){try{const v=localStorage.getItem("gsbs_"+key);return v!==null?JSON.parse(v):def;}catch(e){return def;}}
+function ss(key,val){try{localStorage.setItem("gsbs_"+key,JSON.stringify(val));}catch(e){}}
+
+let XP=gs("xp",0),STREAK=gs("streak",0),LAST_CORRECT_DATE=gs("lcd",""),COMBO=0,COMBO_TIMER=null;
+const CLEARED_IDS=new Set(gs("cleared",[]));
+const UNLOCKED_BADGES=new Set(gs("badges",[]));
+let LAST_PASS_TIME=0;
+
+const XP_PER_PASS=30;
+const XP_LEVELS=[0,100,250,450,700,1000,1400,1900,2500,3200,4000];
+function getLevel(xp){let l=1;for(let i=1;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i])l=i+1;else break;}return l;}
+function xpToNextLevel(xp){const l=getLevel(xp);const cur=XP_LEVELS[l-1];const nxt=XP_LEVELS[l]||XP_LEVELS[XP_LEVELS.length-1]+1000;return{cur,nxt,l,pct:Math.min(100,((xp-cur)/(nxt-cur))*100)};}
+
+const BADGES=[
+  {id:"first",icon:"🏅",name:"First Step",desc:"Complete your first lab"},
+  {id:"streak3",icon:"🔥",name:"On Fire",desc:"3 correct in a row"},
+  {id:"streak5",icon:"🌋",name:"Unstoppable",desc:"5 correct in a row"},
+  {id:"allclear",icon:"🏆",name:"All Clear",desc:"Complete all 5 labs"},
+  {id:"speed",icon:"⚡",name:"Speed Run",desc:"Answer correctly in under 30s"},
+  {id:"daily",icon:"⭐",name:"Daily Hero",desc:"Complete the daily challenge"},
+  {id:"xp100",icon:"💎",name:"XP Hunter",desc:"Earn 100+ XP"},
+  {id:"xp500",icon:"👑",name:"XP Legend",desc:"Earn 500+ XP"},
+  {id:"comeback",icon:"💪",name:"Comeback Kid",desc:"Pass after a fail in the same lab"}
+];
+
+/* ========================================================
+   URL PARAMS + ENTITLEMENT
+   ======================================================== */
+const COURSE_ALIASES={web:"web","web-design":"web",webdesign:"web",html:"web",css:"web",code:"code",coding:"code",python:"code",logic:"code",design:"design",graphic:"design","graphic-design":"design",graphics:"design",social:"social","social-media":"social",marketing:"social",ads:"social",finance:"finance",financial:"finance","financial-literacy":"finance",money:"finance",budget:"finance"};
+const params=new URLSearchParams(location.search);
+const STUDENT=(params.get("name")||"").trim().slice(0,40)||gs("name","");
+if(STUDENT)ss("name",STUDENT);
+const ENTITLED=COURSE_ALIASES[(params.get("course")||"").toLowerCase().trim()]||null;
+const LEVEL_FIXED=(params.get("level")||params.get("lvl")||"").toLowerCase().trim();
+const LVL=LEVEL_FIXED==="primary"||LEVEL_FIXED==="secondary"?LEVEL_FIXED:null;
+let activeId=ENTITLED||LABS[0].id;
+
+const isLocked=id=>ENTITLED?id!==ENTITLED:false;
+const labById=id=>LABS.find(l=>l.id===id);
+
+const root=document.documentElement;
+function applyTheme(lab){root.style.setProperty("--accent",lab.accent);root.style.setProperty("--accent-dark",lab.accentDark);root.style.setProperty("--accent-soft",lab.accentSoft);}
+
+const stageEl=document.getElementById("stage");
+const navEl=document.getElementById("labNav");
+
+/* ========================================================
+   AUDIO (Web Audio API — zero downloads)
+   ======================================================== */
+let _ac=null;
+function ac(){if(!_ac)try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _ac;}
+function beep(freq,dur,type="sine",vol=0.18){
+  const ctx=ac();if(!ctx)return;
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);
+  o.frequency.value=freq;o.type=type;
+  g.gain.setValueAtTime(vol,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+dur);
+  o.start(ctx.currentTime);o.stop(ctx.currentTime+dur);
+}
+function sfxPass(){beep(523,.1);setTimeout(()=>beep(659,.1),100);setTimeout(()=>beep(784,.2),200);}
+function sfxFail(){beep(220,.1,"sawtooth",.12);setTimeout(()=>beep(180,.2,"sawtooth",.1),120);}
+function sfxXP(){beep(880,.07,"square",.08);setTimeout(()=>beep(1100,.07,"square",.08),80);}
+function sfxLevelUp(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.15,"sine",.2),i*120));}
+function sfxBadge(){beep(660,.08);setTimeout(()=>beep(880,.08),90);setTimeout(()=>beep(1100,.15),180);}
+
+/* ========================================================
+   CONFETTI
+   ======================================================== */
+function confetti(n=60){
+  const colors=["#fde68a","#fb7185","#a78bfa","#34d399","#60a5fa","#f97316"];
+  for(let i=0;i<n;i++){
+    const p=document.createElement("div");
+    p.className="confetti-p";
+    p.style.cssText=`left:${Math.random()*100}vw;top:-10px;width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${1+Math.random()*1.5}s;animation-delay:${Math.random()*.5}s;`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),3000);
+  }
+}
+
+/* ========================================================
+   XP POPUP
+   ======================================================== */
+function showXPPopup(xpGained,combo,el){
+  const popup=document.createElement("div");
+  popup.className="xp-popup text-yellow-400 font-extrabold";
+  const comboText=combo>1?` ×${combo} COMBO!`:"";
+  popup.textContent=`+${xpGained} XP${comboText}`;
+  const rect=el?el.getBoundingClientRect():{top:200,left:window.innerWidth/2};
+  popup.style.cssText=`top:${rect.top+window.scrollY-20}px;left:${rect.left+rect.width/2}px;transform:translateX(-50%);`;
+  document.body.appendChild(popup);
+  setTimeout(()=>popup.remove(),1000);
+}
+
+/* ========================================================
+   MASCOT
+   ======================================================== */
+const MASCOT_HAPPY=["🤩","🥳","😎","🎉","🤖✨"];
+const MASCOT_SAD=["😅","🤔","💭","🤖❓"];
+function setMascot(mood){
+  const arr=mood==="happy"?MASCOT_HAPPY:MASCOT_SAD;
+  const icon=arr[Math.floor(Math.random()*arr.length)];
+  const cls=mood==="happy"?"mascot-happy":"mascot-sad";
+  ["header-mascot","gate-mascot"].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=icon;el.className="mascot "+cls;setTimeout(()=>{el.textContent="🤖";el.className="mascot";},2000);}});
+}
+
+/* ========================================================
+   GAMIFICATION ACTIONS
+   ======================================================== */
+function awardXP(base,el){
+  // combo
+  clearTimeout(COMBO_TIMER);
+  COMBO++;
+  COMBO_TIMER=setTimeout(()=>{COMBO=0;},8000);
+  const mult=Math.min(COMBO,3);
+  const gained=base*mult;
+  const prevLevel=getLevel(XP);
+  XP+=gained;ss("xp",XP);
+  const newLevel=getLevel(XP);
+  showXPPopup(gained,mult,el);
+  sfxXP();
+  updateXPUI();
+  if(newLevel>prevLevel){sfxLevelUp();confetti(80);showToast(`🎊 Level Up! You're now Level ${newLevel}!`,4000,"#7c3aed");}
+  checkBadges(el);
+  return gained;
+}
+
+function recordCorrect(){
+  const today=new Date().toDateString();
+  if(LAST_CORRECT_DATE!==today){STREAK=STREAK+1;LAST_CORRECT_DATE=today;ss("streak",STREAK);ss("lcd",today);}
+  LAST_PASS_TIME=Date.now();
+}
+
+function checkBadges(el){
+  const earn=id=>{if(!UNLOCKED_BADGES.has(id)){UNLOCKED_BADGES.add(id);ss("badges",[...UNLOCKED_BADGES]);const b=BADGES.find(x=>x.id===id);if(b){sfxBadge();showToast(`${b.icon} Badge unlocked: ${b.name}!`,3500,"#059669");renderBadges();}}};
+  if(CLEARED_IDS.size>=1) earn("first");
+  if(STREAK>=3) earn("streak3");
+  if(STREAK>=5) earn("streak5");
+  if(CLEARED_IDS.size>=5) earn("allclear");
+  if(Date.now()-LAST_PASS_TIME<30000&&LAST_PASS_TIME>0) earn("speed");
+  if(XP>=100) earn("xp100");
+  if(XP>=500) earn("xp500");
+  // daily
+  const daily=getDailyLab();
+  if(CLEARED_IDS.has(daily.id)){earn("daily");}
+}
+
+function updateXPUI(){
+  const info=xpToNextLevel(XP);
+  document.getElementById("xpCount").textContent=XP;
+  document.getElementById("lvlNum").textContent=info.l;
+  document.getElementById("xpBar").style.width=info.pct.toFixed(1)+"%";
+  document.getElementById("xpBarLvl").textContent=info.l;
+  document.getElementById("xpBarNext").textContent=info.l+1;
+  document.getElementById("xpBarLabel").textContent=XP+" / "+info.nxt+" XP";
+  document.getElementById("streakCount").textContent=STREAK;
+}
+
+/* ========================================================
+   DAILY CHALLENGE
+   ======================================================== */
+function getDailyLab(){const d=new Date();const idx=(d.getDate()+d.getMonth()*3)%LABS.length;return LABS[idx];}
+function renderDailyBanner(){
+  const lab=getDailyLab();
+  if(ENTITLED&&ENTITLED!==lab.id)return; // only show if it's their course
+  const banner=document.getElementById("dailyBanner");
+  banner.classList.remove("hidden");
+  document.getElementById("dailyText").textContent=`Today: complete the ${lab.name} lab for a +50 XP bonus!`;
+}
+
+/* ========================================================
+   BADGE STRIP
+   ======================================================== */
+function renderBadges(){
+  const row=document.getElementById("badgeRow");
+  row.innerHTML=BADGES.map(b=>`
+    <div class="badge-item ${UNLOCKED_BADGES.has(b.id)?"":"locked-badge"} flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 shrink-0" title="${b.name}: ${b.desc}">
+      <span class="text-base">${b.icon}</span>
+      <span class="text-xs font-semibold ${UNLOCKED_BADGES.has(b.id)?"text-slate-700":"text-slate-400"}">${b.name}</span>
+    </div>`).join("");
+  document.getElementById("achieveStrip").classList.remove("hidden");
+}
+
+/* ========================================================
+   LEADERBOARD (Supabase via /api/work with all students)
+   ======================================================== */
+async function renderLeaderboard(){
+  stageEl.innerHTML=`
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="display text-2xl font-extrabold">🏆 Leaderboard</h3>
+        <button id="backFromLB" class="text-sm font-semibold text-slate-500 border border-slate-200 rounded-xl px-4 py-2">← Back</button>
+      </div>
+      <div id="lb-body" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-10 text-center text-slate-400 text-sm">Loading…</div>
+      </div>
+    </div>`;
+  document.getElementById("backFromLB").addEventListener("click",()=>{document.getElementById("navWrap").classList.remove("hidden");renderLab();});
+  try{
+    const resp=await fetch("/api/leaderboard");
+    const data=await resp.json();
+    if(!data.ok||!data.rows.length){document.getElementById("lb-body").innerHTML=`<div class="px-6 py-10 text-center text-slate-400 text-sm">No scores yet — be the first!</div>`;return;}
+    const medals=["🥇","🥈","🥉"];
+    document.getElementById("lb-body").innerHTML=`<table class="w-full text-sm"><thead><tr class="border-b border-slate-100 text-left text-xs uppercase tracking-wider text-slate-400">
+      <th class="px-5 py-3">#</th><th class="px-5 py-3">Student</th><th class="px-5 py-3">Labs</th><th class="px-5 py-3">Score</th>
+    </tr></thead><tbody>${data.rows.map((r,i)=>`
+      <tr class="lb-row border-b border-slate-50 ${r.student_id===STUDENT?"lb-me":""}">
+        <td class="px-5 py-3 font-bold">${medals[i]||i+1}</td>
+        <td class="px-5 py-3 font-semibold">${r.student_id==="anonymous"?"Anon":r.student_id} ${r.student_id===STUDENT?"(you)":""}</td>
+        <td class="px-5 py-3">${r.labs_passed}</td>
+        <td class="px-5 py-3 font-extrabold text-emerald-600">${r.total_score}</td>
+      </tr>`).join("")}
+    </tbody></table>`;
+  }catch(e){document.getElementById("lb-body").innerHTML=`<div class="px-6 py-10 text-center text-slate-400 text-sm">Could not load leaderboard.</div>`;}
+}
+
+/* ========================================================
+   SUPABASE SAVE
+   ======================================================== */
+let lastFailed=new Set();
+async function saveWork(labId,passed,answer,score){
+  const btn=document.getElementById("save-btn");
+  if(btn){btn.disabled=true;btn.textContent="Saving…";}
+  try{
+    const resp=await fetch("/api/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({student_id:STUDENT||"anonymous",course:labId,level:LVL,lab_id:labId,passed,answer:String(answer||""),score})});
+    const data=await resp.json();
+    if(btn){if(data.ok){btn.textContent="✓ Saved!";btn.className="mt-3 w-full px-4 py-3 rounded-2xl bg-emerald-100 text-emerald-700 border border-emerald-200 text-sm font-semibold";}else{btn.textContent="Save failed";btn.disabled=false;}}
+  }catch(e){if(btn){btn.textContent="Offline";btn.disabled=false;}}
+}
+
+function showFeedback(result,answerText,el){
+  const fb=document.getElementById("fb");if(!fb)return;
+  fb.innerHTML=result.html;
+  const savebox=document.getElementById("savebox");if(!savebox)return;
+  if(result.ok){
+    // check comeback badge
+    if(lastFailed.has(activeId)){UNLOCKED_BADGES.add("comeback");ss("badges",[...UNLOCKED_BADGES]);renderBadges();}
+    confetti(50); sfxPass(); setMascot("happy");
+    recordCorrect();
+    CLEARED_IDS.add(activeId);ss("cleared",[...CLEARED_IDS]);
+    awardXP(XP_PER_PASS+(getDailyLab().id===activeId?50:0),el);
+    document.getElementById("progressCount").textContent=CLEARED_IDS.size;
+    renderNav();
+    savebox.innerHTML=`<button id="save-btn" class="save-btn mt-3 w-full px-4 py-3 rounded-2xl text-white text-sm font-extrabold">💾 Save to My Dashboard</button>`;
+    document.getElementById("save-btn").addEventListener("click",()=>saveWork(activeId,true,answerText,10));
+    checkBadges(el);
+  }else{
+    sfxFail(); setMascot("sad");
+    lastFailed.add(activeId);
+    savebox.innerHTML="";
+    COMBO=0;
+  }
+}
+
+function pass(msg){return{ok:true,html:`<div class="banner rounded-2xl bg-emerald-500 text-white px-4 py-4 flex items-start gap-3"><span class="text-2xl">🎉</span><div><p class="font-extrabold text-base">10 / 10 — well done!</p><p class="text-sm text-emerald-50 mt-0.5">${msg}</p></div></div>`};}
+function fail(msg){return{ok:false,html:`<div class="banner rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 px-4 py-4 flex items-start gap-3"><span class="text-2xl">💡</span><div><p class="font-extrabold text-base">Almost — try this</p><p class="text-sm text-rose-700 mt-0.5">${msg}</p></div></div>`};}
+
+/* ========================================================
+   SHARED COMPONENTS
+   ======================================================== */
+function actionRow(label){return `<button id="action-btn" class="action-btn mt-4 w-full px-6 py-4 rounded-2xl text-white font-extrabold text-base">${label}</button><div id="fb" class="mt-4"></div><div id="savebox"></div>`;}
+function codeEditor(id,ph,val){return `<div class="code-editor rounded-xl overflow-hidden border-2 border-slate-800"><div class="flex"><pre id="${id}-gutter" class="code-gutter text-right py-3 px-2 text-xs select-none">1</pre><textarea id="${id}" spellcheck="false" rows="6" placeholder="${ph}" class="code-area flex-1 py-3 px-3 text-sm resize-none outline-none">${val||""}</textarea></div></div>`;}
+function moneyField(label,id,preset){return `<div><label class="block text-xs font-semibold text-slate-500 mb-1">${label}</label><div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold">₦</span><input id="${id}" type="text" inputmode="numeric" value="${preset||""}" placeholder="0" class="field w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-3 pl-8 pr-4 font-mono text-base"/></div></div>`;}
+function relLum(h){const m=h.replace("#",""),n=m.length===3?m.split("").map(c=>c+c).join(""):m,rgb=[0,2,4].map(i=>parseInt(n.slice(i,i+2),16)/255).map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));return 0.2126*rgb[0]+0.7152*rgb[1]+0.0722*rgb[2];}
+function cr(a,b){const x=relLum(a),y=relLum(b);return(Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);}
+function simPy(src){const lines=(src||"").replace(/\t/g,"    ").split("\n");const fi=lines.findIndex(l=>/for\s+\w+\s+in\s+range\s*\(/.test(l));if(fi===-1)return null;const m2=lines[fi].match(/for\s+(\w+)\s+in\s+range\s*\(([^)]*)\)/);if(!m2)return null;const vname=m2[1];const args=m2[2].split(",").map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));if(!args.length)return null;let start=0,stop=0,step=1;if(args.length===1)stop=args[0];else if(args.length===2){start=args[0];stop=args[1];}else{start=args[0];stop=args[1];step=args[2];}if(step===0)return["Error: step can't be 0"];const seq=[];if(step>0){for(let i=start;i<stop;i+=step){seq.push(i);if(seq.length>50)break;}}else{for(let i=start;i>stop;i+=step){seq.push(i);if(seq.length>50)break;}}const body=lines.slice(fi+1).filter(l=>l.startsWith("    ")||l.startsWith("\t"));const out=[];seq.forEach(v=>{body.forEach(l=>{const pl=l.trim();if(pl.startsWith("print(")){const inner=pl.slice(6,-1).trim();const sm=inner.match(/^["'](.*?)["']$/);if(sm)out.push(sm[1]);else if(inner===vname)out.push(String(v));else out.push(inner.replace(new RegExp("\\b"+vname+"\\b","g"),String(v)));}})}); return out.length?out:seq.map(String);}
+
+/* ========================================================
+   PRIMARY WORKSPACES (tap + live visual)
+   ======================================================== */
+function priWebWs(){return`
+  <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-amber-800">🎯 Build the heading block by block — watch it come alive!</div>
+  <div class="grid grid-cols-2 gap-2.5 mb-3">
+    <button data-block="open" class="block-chip b-amber rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">&lt;h1&gt;</span><span class="block text-[11px] opacity-75 mt-0.5">open heading</span></button>
+    <button data-block="text" class="block-chip b-sky rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">Hello World</span><span class="block text-[11px] opacity-75 mt-0.5">the words</span></button>
+    <button data-block="close" class="block-chip b-amber rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">&lt;/h1&gt;</span><span class="block text-[11px] opacity-75 mt-0.5">close heading</span></button>
+    <button data-block="p" class="block-chip b-slate rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">&lt;p&gt;</span><span class="block text-[11px] opacity-75 mt-0.5">paragraph (distractor)</span></button>
+  </div>
+  <div class="flex items-center justify-between mb-1.5"><p class="text-xs font-semibold text-slate-500">Your sequence</p><button id="seq-clear" class="text-xs text-slate-400 underline">↺ Clear</button></div>
+  <div id="stage-box" class="min-h-[52px] rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-2 flex flex-wrap gap-2 mb-3"></div>
+  <div class="mb-3"><p class="text-xs font-semibold text-slate-500 mb-1">Live preview ✨</p><iframe id="pri-web-preview" sandbox title="preview" class="w-full h-24 rounded-xl border-2 border-slate-200 bg-white"></iframe></div>
+  ${actionRow("🤖 Run My Code")}`;
+}
+function priWebWire(){
+  const TAGS={open:"<h1>",text:"Hello World",close:"</h1>",p:"<p>"};const CLR={open:"b-amber",text:"b-sky",close:"b-amber",p:"b-slate"};
+  let seq=[];const box=document.getElementById("stage-box"),frame=document.getElementById("pri-web-preview");
+  const refresh=()=>{
+    if(!seq.length){box.innerHTML=`<span class="text-slate-400 text-xs self-center">Tap blocks above…</span>`;frame.srcdoc="";return;}
+    box.innerHTML=seq.map(k=>`<span class="stage-chip ${CLR[k]} rounded-lg px-2.5 py-1.5 text-xs font-bold">${TAGS[k]}</span>`).join("");
+    frame.srcdoc=`<!doctype html><style>body{font-family:system-ui,sans-serif;margin:10px;color:#0f172a}</style>${seq.map(k=>TAGS[k]).join("")}`;
+    beep(440+seq.length*80,.07,"sine",.1);
+  };
+  document.querySelectorAll("[data-block]").forEach(b=>b.addEventListener("click",()=>{seq.push(b.dataset.block);refresh();}));
+  document.getElementById("seq-clear").addEventListener("click",()=>{seq=[];refresh();document.getElementById("fb").innerHTML="";document.getElementById("savebox").innerHTML="";});
+  refresh();
+  document.getElementById("action-btn").addEventListener("click",function(){const ok=seq.join(",")===["open","text","close"].join(",");showFeedback(ok?pass("&lt;h1&gt;Hello World&lt;/h1&gt; — a perfect heading! Look at the live preview!"):fail("Order: &lt;h1&gt; → Hello World → &lt;/h1&gt;. Like a sandwich: open, fill, close."),seq.join(","),this);});
+}
+
+function priCodeWs(){return`
+  <div class="bg-violet-50 border border-violet-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-violet-800">🎯 Give the robot instructions — watch it walk in real time!</div>
+  <div class="grid grid-cols-2 gap-2.5 mb-3">
+    <button data-block="click" class="block-chip b-amber rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">When Clicked</span><span class="block text-[11px] opacity-75 mt-0.5">the trigger ⚡</span></button>
+    <button data-block="move" class="block-chip b-sky rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">Move Forward</span><span class="block text-[11px] opacity-75 mt-0.5">the action 🚶</span></button>
+    <button data-block="jump" class="block-chip b-violet rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">Jump</span><span class="block text-[11px] opacity-75 mt-0.5">wrong action</span></button>
+    <button data-block="stop" class="block-chip b-rose rounded-2xl p-3 text-left"><span class="block font-extrabold text-sm">Stop</span><span class="block text-[11px] opacity-75 mt-0.5">wrong action</span></button>
+  </div>
+  <div class="flex items-center justify-between mb-1.5"><p class="text-xs font-semibold text-slate-500">Your program</p><button id="seq-clear" class="text-xs text-slate-400 underline">↺ Clear</button></div>
+  <div id="stage-box" class="min-h-[52px] rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-2 flex flex-wrap gap-2 mb-3"></div>
+  <div class="bg-slate-800 rounded-2xl p-4 mb-3">
+    <div class="flex items-end gap-2 relative h-14">
+      <div class="absolute bottom-5 left-0 right-0 h-0.5 bg-slate-600 rounded"></div>
+      <div id="robot-icon" class="absolute bottom-5 text-2xl transition-all duration-700" style="left:0">🤖</div>
+      <div id="robot-flag" class="absolute bottom-5 right-4 text-xl">🏁</div>
+    </div>
+    <p id="robot-status" class="text-slate-400 text-xs text-center mt-2">Waiting for instructions…</p>
+  </div>
+  ${actionRow("🤖 Run My Code")}`;
+}
+function priCodeWire(){
+  const LABELS={click:"When Clicked ⚡",move:"Move Forward 🚶",jump:"Jump 🦘",stop:"Stop 🛑"};const COLORS={click:"b-amber",move:"b-sky",jump:"b-violet",stop:"b-rose"};
+  let seq=[];const box=document.getElementById("stage-box");
+  const refresh=()=>{
+    if(!seq.length){box.innerHTML=`<span class="text-slate-400 text-xs self-center">Tap blocks…</span>`;return;}
+    box.innerHTML=seq.map(k=>`<span class="stage-chip ${COLORS[k]} rounded-lg px-2.5 py-1.5 text-xs font-bold">${LABELS[k]}</span>`).join("");
+    beep(300+seq.length*60,.08,"square",.08);
+  };
+  document.querySelectorAll("[data-block]").forEach(b=>b.addEventListener("click",()=>{seq.push(b.dataset.block);refresh();}));
+  document.getElementById("seq-clear").addEventListener("click",()=>{seq=[];refresh();const r=document.getElementById("robot-icon");if(r)r.style.left="0";document.getElementById("robot-status").textContent="Waiting…";document.getElementById("fb").innerHTML="";document.getElementById("savebox").innerHTML="";});
+  refresh();
+  document.getElementById("action-btn").addEventListener("click",function(){
+    const ok=seq.join(",")==="click,move";
+    const robot=document.getElementById("robot-icon"),track=document.getElementById("robot-icon").parentElement,status=document.getElementById("robot-status");
+    if(ok){const w=Math.max(0,track.offsetWidth-60);robot.style.left=w+"px";status.textContent="🎉 Moving forward!";}
+    else{robot.style.left="0";status.textContent="❌ Wrong order — try again!";}
+    showFeedback(ok?pass("When Clicked → Move Forward! The robot walked. That's real programming logic."):fail("Start with 'When Clicked' (trigger), then 'Move Forward' (action). Order matters!"),seq.join(","),this);
+  });
+}
+
+const DESIGN_CARDS=[{bg:"#fde68a",fg:"#fef3c7",cap:"Pale yellow on cream",ok:false},{bg:"#4c1d95",fg:"#facc15",cap:"Yellow on deep purple",ok:true},{bg:"#e5e7eb",fg:"#cbd5e1",cap:"Grey on grey",ok:false}];
+function priDesignWs(){return`
+  <div class="bg-pink-50 border border-pink-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-pink-800">🎯 Tap a colour card — watch the flyer change live!</div>
+  <div class="grid grid-cols-3 gap-2 mb-3">${DESIGN_CARDS.map((c,i)=>`<button data-card="${i}" class="choice-card rounded-2xl border-2 border-slate-200 overflow-hidden"><div class="h-20 flex items-center justify-center" style="background:${c.bg}"><span class="font-extrabold text-sm" style="color:${c.fg}">SALE</span></div><div class="px-1.5 py-1 text-[10px] text-slate-500 bg-white leading-tight">${c.cap}</div></button>`).join("")}</div>
+  <div class="mb-3"><p class="text-xs font-semibold text-slate-500 mb-1.5">Live flyer preview ✨</p><div id="pri-flyer" class="rounded-2xl border-2 border-slate-200 h-24 flex items-center justify-center bg-slate-100 transition-all duration-500"><span class="text-slate-400 text-sm">Tap a card above…</span></div></div>
+  ${actionRow("🤖 Run My Code")}`;
+}
+function priDesignWire(){
+  let chosen=null;const flyer=document.getElementById("pri-flyer");
+  document.querySelectorAll("[data-card]").forEach(b=>b.addEventListener("click",()=>{
+    chosen=+b.dataset.card;document.querySelectorAll("[data-card]").forEach(c=>c.classList.remove("sel"));b.classList.add("sel");
+    const c=DESIGN_CARDS[chosen];flyer.style.background=c.bg;
+    flyer.innerHTML=`<span class="font-extrabold text-2xl transition-all" style="color:${c.fg}">MEGA SALE</span>`;
+    beep(c.ok?600:350,.1,"sine",.12);
+  }));
+  document.getElementById("action-btn").addEventListener("click",function(){
+    if(chosen===null)return showFeedback(fail("Tap one of the colour cards first."),``,this);
+    const c=DESIGN_CARDS[chosen];const ok=c.ok;
+    showFeedback(ok?pass(`Great eye! ${cr(c.bg,c.fg).toFixed(1)}:1 contrast — easy to read even in direct sunlight.`):fail(`That pair fades together. Find the biggest brightness difference between text and background.`),`card:${chosen}`,this);
+  });
+}
+
+const SOC_LINES=[{t:"We sell shoes.",ok:false},{t:"🔥 FREE delivery on the BEST shoes in Lagos — today only!",ok:true},{t:"Shoes are available now.",ok:false}];
+function priSocialWs(){return`
+  <div class="bg-orange-50 border border-orange-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-orange-800">🎯 Tap a headline — see it appear on the phone screen live!</div>
+  <div class="space-y-2 mb-3">${SOC_LINES.map((h,i)=>`<button data-hl="${i}" class="choice-card w-full rounded-2xl border-2 border-slate-200 bg-white p-3 text-left text-sm font-semibold text-slate-700">${h.t}</button>`).join("")}</div>
+  <div class="phone-frame max-w-[200px] mx-auto mb-3"><div class="phone-screen p-3"><div class="bg-slate-100 rounded-lg p-1.5 mb-2 flex gap-1"><div class="h-1.5 w-1.5 rounded-full bg-slate-400"></div><div class="h-1.5 flex-1 rounded-full bg-slate-300"></div></div><div class="bg-orange-500 text-white rounded-xl p-2.5 text-xs font-semibold leading-snug min-h-[56px] flex items-center transition-all duration-300" id="phone-ad"><span class="text-orange-200">Tap above…</span></div></div></div>
+  ${actionRow("🤖 Run My Code")}`;
+}
+function priSocialWire(){
+  let chosen=null;const phone=document.getElementById("phone-ad");
+  document.querySelectorAll("[data-hl]").forEach(b=>b.addEventListener("click",()=>{
+    chosen=+b.dataset.hl;document.querySelectorAll("[data-hl]").forEach(c=>c.classList.remove("sel"));b.classList.add("sel");
+    phone.innerHTML=`<span>${SOC_LINES[chosen].t}</span>`;beep(SOC_LINES[chosen].ok?550:320,.1,"sine",.12);
+  }));
+  document.getElementById("action-btn").addEventListener("click",function(){
+    if(chosen===null)return showFeedback(fail("Tap a headline to try it on the phone screen first."),``,this);
+    const ok=SOC_LINES[chosen].ok;
+    showFeedback(ok?pass("That headline has a hook (FREE + BEST) and real excitement — thumbs will stop scrolling!"):fail("Too flat. The winning headline promises something valuable and creates urgency."),`hl:${chosen}`,this);
+  });
+}
+
+const PILES=[{a:"₦500",v:500},{a:"₦5,000",v:5000},{a:"₦15,000",v:15000}];
+function priFinanceWs(){return`
+  <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-emerald-800">🎯 Tap the right savings pile — watch the budget update live!</div>
+  <p class="text-sm font-semibold text-slate-600 mb-2">Income: <strong>₦50,000</strong> · 10% savings = ?</p>
+  <div class="grid grid-cols-3 gap-2.5 mb-3">${PILES.map((p,i)=>`<button data-pile="${i}" class="money-pile rounded-2xl border-2 border-slate-200 bg-emerald-50 p-4 text-center"><span class="block text-2xl mb-1">💵</span><span class="block font-extrabold text-base text-emerald-700">${p.a}</span></button>`).join("")}</div>
+  <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 mb-3 text-sm space-y-1.5">
+    <div class="flex justify-between"><span class="text-slate-500">Income</span><span class="font-semibold">₦50,000</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Savings (10%)</span><span id="live-sav" class="font-semibold text-slate-400">—</span></div>
+    <div class="h-px bg-slate-200"></div>
+    <div class="flex justify-between"><span class="font-semibold text-slate-600">Leftover</span><span id="live-left" class="font-bold text-emerald-600">—</span></div>
+  </div>
+  ${actionRow("🤖 Run My Code")}`;
+}
+function priFinanceWire(){
+  let chosen=null;
+  document.querySelectorAll("[data-pile]").forEach(b=>b.addEventListener("click",()=>{
+    chosen=+b.dataset.pile;document.querySelectorAll("[data-pile]").forEach(c=>c.classList.remove("sel","border-emerald-400"));b.classList.add("sel","border-emerald-400");
+    const v=PILES[chosen].v;const ok=v===5000;
+    document.getElementById("live-sav").textContent=`₦${v.toLocaleString()}`;
+    document.getElementById("live-sav").className="font-semibold "+(ok?"text-emerald-600":"text-rose-500");
+    document.getElementById("live-left").textContent=`₦${(50000-v).toLocaleString()}`;
+    beep(ok?600:350,.1,"sine",.12);
+  }));
+  document.getElementById("action-btn").addEventListener("click",function(){
+    if(chosen===null)return showFeedback(fail("Tap a money pile first."),``,this);
+    const ok=PILES[chosen].v===5000;
+    showFeedback(ok?pass("Correct! ₦5,000 = 10% of ₦50,000. Leftover = ₦45,000. That's the savings habit!"):fail(`Not quite. 10% means ÷ 10: ₦50,000 ÷ 10 = ₦5,000.`),`pile:${chosen}`,this);
+  });
+}
+
+/* ========================================================
+   SECONDARY WORKSPACES (type + live output)
+   ======================================================== */
+function secWebWs(){return`
+  <div class="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-blue-800">💻 Type HTML below — the live preview updates every keystroke!</div>
+  ${codeEditor("editor","<h1>Hello World</h1>","")}
+  <div class="mt-3"><div class="flex items-center justify-between mb-1.5"><span class="text-xs font-semibold text-slate-500">Live preview ✨</span><span class="text-[11px] text-emerald-600 font-semibold">CodePen-style</span></div><iframe id="web-preview" title="preview" sandbox class="w-full h-36 rounded-xl border-2 border-slate-200 bg-white"></iframe></div>
+  ${actionRow("⚡ Validate & Mark Work")}`;
+}
+function secWebWire(){
+  const ta=document.getElementById("editor"),g=document.getElementById("editor-gutter"),frame=document.getElementById("web-preview");
+  const sync=()=>{const n=ta.value.split("\n").length;let s="";for(let i=1;i<=n;i++)s+=i+(i<n?"\n":"");g.textContent=s;g.scrollTop=ta.scrollTop;};
+  const paint=()=>{frame.srcdoc=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui,sans-serif;margin:12px;color:#0f172a}</style>${ta.value}`;};
+  ta.addEventListener("input",()=>{sync();paint();});ta.addEventListener("scroll",()=>{g.scrollTop=ta.scrollTop;});sync();paint();
+  document.getElementById("action-btn").addEventListener("click",function(){
+    const v=(ta.value||"").toLowerCase();const raw=ta.value;
+    if(v.includes("<h1>")&&v.includes("</h1>")&&v.includes("hello world"))return showFeedback(pass("Perfect &lt;h1&gt;Hello World&lt;/h1&gt;! Check the live preview — that's exactly what browsers render."),raw,this);
+    if(v.includes("<h1>")&&v.includes("hello world"))return showFeedback(fail("Almost! Add the closing &lt;/h1&gt; tag."),``,this);
+    if(v.includes("hello world"))return showFeedback(fail("Wrap the words in &lt;h1&gt;…&lt;/h1&gt; tags."),``,this);
+    showFeedback(fail("Type: &lt;h1&gt;Hello World&lt;/h1&gt; — watch the preview show it big and bold!"),``,this);
+  });
+}
+
+function secCodeWs(){return`
+  <div class="bg-violet-50 border border-violet-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-violet-800">🤖 Type a loop → press ▶ Run to execute it — watch the console fill up!</div>
+  ${codeEditor("editor","for i in range(5):\n    print(i)","")}
+  <div class="flex gap-2.5 mt-3">
+    <button id="run-btn" class="flex-1 py-3 rounded-xl text-white font-semibold text-sm" style="background:#0f172a">▶ Run Code</button>
+    <button id="action-btn" class="flex-1 action-btn py-3 rounded-xl text-white font-semibold text-sm">⚡ Validate</button>
+  </div>
+  <div class="mt-3"><p class="text-xs font-semibold text-slate-500 mb-1.5">Output console ✨</p><div id="console-out" class="console-out rounded-xl p-3 text-sm min-h-[70px] whitespace-pre-wrap">Press ▶ Run to execute…</div></div>
+  <div id="fb" class="mt-4"></div><div id="savebox"></div>`;
+}
+function secCodeWire(){
+  const ta=document.getElementById("editor"),g=document.getElementById("editor-gutter"),cons=document.getElementById("console-out");
+  const sync=()=>{const n=ta.value.split("\n").length;let s="";for(let i=1;i<=n;i++)s+=i+(i<n?"\n":"");g.textContent=s;g.scrollTop=ta.scrollTop;};
+  ta.addEventListener("input",sync);ta.addEventListener("scroll",()=>{g.scrollTop=ta.scrollTop;});sync();
+  document.getElementById("run-btn").addEventListener("click",()=>{
+    const out=simPy(ta.value);
+    if(!out){cons.innerHTML=`<span style="color:#fcd34d">⚠ Couldn't run. Try:\nfor i in range(5):\n    print(i)</span>`;return;}
+    // animate lines appearing one by one
+    cons.textContent="";sfxXP();
+    out.slice(0,50).forEach((line,i)=>setTimeout(()=>{cons.textContent+=line+"\n";},i*60));
+    if(out.length>50)setTimeout(()=>{cons.textContent+=`… and ${out.length-50} more lines`;},out.length*60);
+  });
+  document.getElementById("action-btn").addEventListener("click",function(){
+    const v=(ta.value||"").toLowerCase().replace(/\s+/g," ").trim();const raw=ta.value;
+    if(v.includes("for i in range")){const out=simPy(raw);const extra=out?` Console shows: ${out.slice(0,5).join(", ")}${out.length>5?"…":""}.`:"";return showFeedback(pass("Loop confirmed!"+extra+" Press ▶ Run to watch it execute line by line."),raw,this);}
+    if(v.includes("for")&&v.includes("range"))return showFeedback(fail("Almost! Keep the exact order: for i in range(…):"),``,this);
+    showFeedback(fail("Start with: for i in range(5): then print(i) on the next line."),``,this);
+  });
+}
+
+function secDesignWs(){return`
+  <div class="bg-pink-50 border border-pink-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-pink-800">🎨 Drag the colour pickers — the flyer repaints and the contrast meter reacts live!</div>
+  <div class="rounded-2xl border-2 border-slate-200 overflow-hidden mb-3"><div id="flyer-stage" class="h-36 flex flex-col items-center justify-center text-center px-5 transition-all duration-300" style="background:#4c1d95"><span id="flyer-head" class="font-extrabold text-2xl transition-all duration-300" style="color:#facc15">MEGA SALE</span><span id="flyer-sub" class="font-semibold text-sm mt-1 transition-all duration-300" style="color:#facc15">This Saturday only</span></div></div>
+  <div class="space-y-3 mb-3">
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Headline</label><input id="flyer-text" type="text" maxlength="24" value="MEGA SALE" class="field w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-2 px-3 text-sm font-semibold"/></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Background colour</label><input id="flyer-bg" type="color" value="#4c1d95" class="h-10 w-full rounded-xl border-2 border-slate-200 cursor-pointer p-1"/></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Text colour</label><input id="flyer-fg" type="color" value="#facc15" class="h-10 w-full rounded-xl border-2 border-slate-200 cursor-pointer p-1"/></div>
+    </div>
+  </div>
+  <div id="flyer-meter" class="rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between text-sm mb-3">
+    <span class="font-semibold text-slate-600">Contrast ratio</span><span id="flyer-ratio" class="font-bold text-slate-400">—</span>
+  </div>
+  ${actionRow("⚡ Validate & Mark Work")}`;
+}
+function secDesignWire(){
+  const txt=document.getElementById("flyer-text"),bg=document.getElementById("flyer-bg"),fg=document.getElementById("flyer-fg");
+  const head=document.getElementById("flyer-head"),sub=document.getElementById("flyer-sub"),stage=document.getElementById("flyer-stage");
+  const ratioEl=document.getElementById("flyer-ratio"),meter=document.getElementById("flyer-meter");
+  const paint=()=>{
+    head.textContent=txt.value||"YOUR HEADLINE";stage.style.background=bg.value;head.style.color=fg.value;sub.style.color=fg.value;
+    const ratio=cr(bg.value,fg.value),r=ratio.toFixed(1);
+    if(ratio>=4.5){ratioEl.textContent=r+":1  ✓ excellent!";ratioEl.className="font-bold text-emerald-600";meter.className="rounded-xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 flex items-center justify-between text-sm mb-3";beep(600,.06,"sine",.08);}
+    else if(ratio>=3){ratioEl.textContent=r+":1  ~ getting closer";ratioEl.className="font-bold text-amber-600";meter.className="rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between text-sm mb-3";}
+    else{ratioEl.textContent=r+":1  ✗ too low";ratioEl.className="font-bold text-rose-600";meter.className="rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-3 flex items-center justify-between text-sm mb-3";}
+  };
+  txt.addEventListener("input",paint);bg.addEventListener("input",paint);fg.addEventListener("input",paint);paint();
+  document.getElementById("action-btn").addEventListener("click",function(){
+    const t=(txt.value||"").trim(),ratio=cr(bg.value,fg.value),r=ratio.toFixed(1);
+    if(!t)return showFeedback(fail("Add a headline text first."),``,this);
+    if(ratio>=4.5)return showFeedback(pass(`${r}:1 — stunning contrast! Your flyer is readable anywhere in Nigeria.`),`bg:${bg.value} fg:${fg.value}`,this);
+    if(ratio>=3)return showFeedback(fail(`${r}:1 is close — push the colours further apart to reach 4.5:1.`),``,this);
+    showFeedback(fail(`Only ${r}:1 — try a very dark background with very bright text.`),``,this);
+  });
+}
+
+const HOOKS=["free","discount","best","promo","sale","deal","offer","limited"];
+function secSocialWs(){return`
+  <div class="bg-orange-50 border border-orange-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-orange-800">📢 Write your ad — the hook highlighter shows value words in real time!</div>
+  <textarea id="editor" rows="5" class="field w-full rounded-xl border-2 border-slate-200 bg-slate-50 p-3.5 text-sm leading-relaxed resize-none mb-3" placeholder="Sell anything — your shop, your skill, an event…"></textarea>
+  <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 mb-3">
+    <div class="flex gap-4 mb-2 text-sm">
+      <span class="text-slate-500">Sentences: <strong id="sent-count" class="text-slate-700">0</strong></span>
+      <span class="text-slate-500">Hook words: <strong id="hook-count" class="text-emerald-600">0</strong></span>
+    </div>
+    <div id="hook-found" class="flex flex-wrap gap-1.5"></div>
+  </div>
+  ${actionRow("⚡ Validate & Mark Work")}`;
+}
+function secSocialWire(){
+  const ta=document.getElementById("editor"),sentEl=document.getElementById("sent-count"),hookEl=document.getElementById("hook-count"),hookList=document.getElementById("hook-found");
+  const update=()=>{
+    const v=(ta.value||"").toLowerCase();
+    sentEl.textContent=v.split(/[.!?]+/).filter(s=>s.trim().length>2).length;
+    const found=HOOKS.filter(h=>v.includes(h));
+    hookEl.textContent=found.length;
+    hookList.innerHTML=found.map(h=>`<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">${h} ✓</span>`).join("");
+    if(found.length>0)beep(500+found.length*50,.06,"sine",.07);
+  };
+  ta.addEventListener("input",update);update();
+  document.getElementById("action-btn").addEventListener("click",function(){
+    const v=(ta.value||"").toLowerCase(),raw=ta.value;
+    const found=HOOKS.find(h=>v.includes(h));const sents=v.split(/[.!?]+/).filter(s=>s.trim().length>2).length;
+    if(found&&sents>=3)return showFeedback(pass(`Hook word "${found}" spotted across ${sents} sentences. That's a real copywriter at work!`),raw,this);
+    if(found)return showFeedback(pass(`Good hook with "${found}"! Try to reach 3 full sentences for the full score.`),raw,this);
+    if(v.trim().length)return showFeedback(fail("No hook word yet. Add: free, discount, best, promo, sale, deal."),``,this);
+    showFeedback(fail("Write your advert first!"),``,this);
+  });
+}
+
+function secFinanceWs(){return`
+  <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-3 text-xs font-semibold text-emerald-800">💰 Type each number — the budget calculator updates every digit live!</div>
+  <div class="space-y-3 mb-3">
+    ${moneyField("Income","fin-income","50000")}
+    ${moneyField("Savings (10% of income)","fin-savings","")}
+    ${moneyField("Leftover Balance","fin-left","")}
+  </div>
+  <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 mb-3 text-sm space-y-1.5">
+    <div class="flex justify-between"><span class="text-slate-500">Income entered</span><span id="live-inc" class="font-semibold">₦50,000</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Target savings (10%)</span><span id="live-tgt" class="font-semibold text-emerald-600">₦5,000</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Expected leftover</span><span id="live-exp" class="font-semibold text-emerald-600">₦45,000</span></div>
+    <div class="h-px bg-slate-200 my-1"></div>
+    <div class="flex justify-between"><span class="text-slate-500">Your savings</span><span id="live-s2" class="font-semibold text-slate-400">—</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Your leftover</span><span id="live-l2" class="font-semibold text-slate-400">—</span></div>
+  </div>
+  ${actionRow("⚡ Validate & Mark Work")}`;
+}
+function secFinanceWire(){
+  const num=s=>Number(String(s||"").replace(/[^0-9.]/g,""));const fmt=n=>"₦"+n.toLocaleString("en-NG");
+  const incEl=document.getElementById("fin-income"),savEl=document.getElementById("fin-savings"),leftEl=document.getElementById("fin-left");
+  const lI=document.getElementById("live-inc"),lT=document.getElementById("live-tgt"),lE=document.getElementById("live-exp"),lS=document.getElementById("live-s2"),lL=document.getElementById("live-l2");
+  const update=()=>{
+    const inc=num(incEl.value)||50000;const tgt=Math.round(inc*.1);const exp=inc-tgt;
+    lI.textContent=fmt(inc);lT.textContent=fmt(tgt);lE.textContent=fmt(exp);
+    const sv=num(savEl.value),lf=num(leftEl.value);
+    if(savEl.value){lS.textContent=fmt(sv);lS.className="font-semibold "+(sv===tgt?"text-emerald-600":"text-rose-500");if(sv===tgt)beep(600,.06,"sine",.08);}
+    else lS.textContent="—";
+    if(leftEl.value){lL.textContent=fmt(lf);lL.className="font-semibold "+(lf===exp?"text-emerald-600":"text-rose-500");if(lf===exp)beep(660,.06,"sine",.08);}
+    else lL.textContent="—";
+  };
+  [incEl,savEl,leftEl].forEach(el=>el.addEventListener("input",update));update();
+  document.getElementById("action-btn").addEventListener("click",function(){
+    const income=num(incEl.value),savings=num(savEl.value),left=num(leftEl.value);
+    if(!income)return showFeedback(fail("Enter the income first."),``,this);
+    const eS=Math.round(income*.1),eL=income-eS,sOK=savings===eS,lOK=left===eL;const answer=`i:${income} s:${savings} l:${left}`;
+    if(sOK&&lOK)return showFeedback(pass(`Spot on! Save ${fmt(eS)}, keep ${fmt(eL)}. The 10% habit in action — compounding starts now.`),answer,this);
+    if(!sOK&&lOK)return showFeedback(fail(`Savings off. 10% of ${fmt(income)} = ${fmt(eS)} (÷10).`),``,this);
+    if(sOK&&!lOK)return showFeedback(fail(`Savings right! Leftover = ${fmt(income)} − ${fmt(eS)} = ${fmt(eL)}.`),``,this);
+    showFeedback(fail(`Save ${fmt(eS)}, leftover ${fmt(eL)}.`),``,this);
+  });
+}
+
+/* ========================================================
+   RENDER NAV + LAB
+   ======================================================== */
+const tabs=[{key:"principle",label:"The Principle"},{key:"career",label:"The Career"},{key:"earnings",label:"The Earnings"},{key:"challenge",label:"The Challenge"}];
+
+function renderNav(){
+  const daily=getDailyLab();
+  navEl.innerHTML=LABS.map(lab=>{
+    const locked=isLocked(lab.id),isDaily=lab.id===daily.id&&(!ENTITLED||ENTITLED===lab.id);
+    return `<button data-lab="${lab.id}" ${locked?'data-locked="1"':""}
+      class="pill pill-${lab.id} ${lab.id===activeId?"active":""} ${CLEARED_IDS.has(lab.id)?"cleared":""} ${locked?"locked":""} ${isDaily?"daily-glow":""}
+             shrink-0 rounded-2xl px-4 py-2.5 flex items-center gap-2.5">
+      <span class="text-lg leading-none">${locked?"🔒":lab.emoji}${isDaily?" ⭐":""}</span>
+      <span class="text-left leading-tight">
+        <span class="block text-sm font-bold">${lab.name}</span>
+        <span class="pill-tag block text-[11px] text-slate-400">${locked?"Not in your plan":lab.tag}</span>
+      </span>
+      <span class="check ml-1 text-emerald-300 font-bold">✓</span>
+    </button>`;
+  }).join("");
+}
+
+function renderLab(){
+  const lab=labById(activeId);applyTheme(lab);
+  const isPri=LVL==="primary";
+  const wsHtml=isPri?{web:priWebWs,code:priCodeWs,design:priDesignWs,social:priSocialWs,finance:priFinanceWs}[lab.id]():{web:secWebWs,code:secCodeWs,design:secDesignWs,social:secSocialWs,finance:secFinanceWs}[lab.id]();
+  const chip=isPri?`<span class="accent-chip text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">🧸 Primary</span>`:`<span class="accent-chip text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">⚡ Secondary</span>`;
+  stageEl.innerHTML=`
+    <div class="grid lg:grid-cols-2 gap-4 sm:gap-5 items-start">
+      <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="accent-bar h-1.5"></div>
+        <div class="p-5 sm:p-6">
+          <div class="flex items-center gap-2 mb-4"><span class="text-2xl">${lab.emoji}</span><h3 class="display text-lg sm:text-xl font-extrabold">${lab.name}</h3></div>
+          <div id="subtabs" class="flex gap-5 overflow-x-auto no-scrollbar border-b border-slate-100 mb-4">
+            ${tabs.map((t,i)=>`<button data-subtab="${t.key}" class="subtab ${i===0?"active":""} shrink-0 pb-2.5 text-sm font-semibold">${t.label}</button>`).join("")}
+          </div>
+          <div id="subtab-body" class="text-slate-600 leading-relaxed text-[15px] min-h-[140px]"></div>
+        </div>
+      </section>
+      <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="accent-bar h-1.5"></div>
+        <div class="p-5 sm:p-6">
+          <div class="flex items-center justify-between mb-3"><h3 class="display text-lg sm:text-xl font-extrabold">Practice Lab</h3>${chip}</div>
+          ${wsHtml}
+        </div>
+      </section>
+    </div>`;
+  renderSubtab("principle");
+  document.querySelectorAll("#subtabs .subtab").forEach(b=>b.addEventListener("click",()=>renderSubtab(b.dataset.subtab)));
+  chatOnLabChange();
+}
+
+function renderSubtab(key){
+  const lab=labById(activeId);
+  const text=key==="challenge"?lab.challenge[LVL||"secondary"]:lab[key];
+  document.getElementById("subtab-body").innerHTML=`<p>${text}</p>`;
+  document.querySelectorAll("#subtabs .subtab").forEach(b=>b.classList.toggle("active",b.dataset.subtab===key));
+}
+
+/* ========================================================
+   DASHBOARD
+   ======================================================== */
+const CLABELS={web:"💻 Web Design",code:"🤖 Coding",design:"🎨 Graphic Design",social:"📢 Marketing",finance:"💰 Finance"};
+async function renderDashboard(){
+  stageEl.innerHTML=`<div class="max-w-3xl mx-auto"><div class="flex items-center justify-between mb-5"><h3 class="display text-2xl font-extrabold">📊 My Saved Work</h3><button id="backFromDash" class="text-sm font-semibold text-slate-500 border border-slate-200 rounded-xl px-4 py-2">← Back</button></div><div id="dash-body" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden"><div class="px-6 py-10 text-center text-slate-400 text-sm">Loading…</div></div></div>`;
+  document.getElementById("backFromDash").addEventListener("click",()=>{document.getElementById("navWrap").classList.remove("hidden");renderLab();});
+  try{
+    const resp=await fetch("/api/work?student_id="+encodeURIComponent(STUDENT||"anonymous"));const data=await resp.json();
+    if(!data.ok||!data.submissions.length){document.getElementById("dash-body").innerHTML=`<div class="px-6 py-10 text-center text-slate-400 text-sm">No saved work yet. Pass a lab and press 💾 Save.</div>`;return;}
+    const fmt=dt=>new Date(dt).toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    document.getElementById("dash-body").innerHTML=`<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b border-slate-100 text-left text-xs uppercase tracking-wider text-slate-400"><th class="px-5 py-3">Course</th><th class="px-5 py-3">Level</th><th class="px-5 py-3">Score</th><th class="px-5 py-3">Result</th><th class="px-5 py-3">Date</th></tr></thead><tbody>${data.submissions.map(s=>`<tr class="dash-row border-b border-slate-50"><td class="px-5 py-3 font-semibold">${CLABELS[s.course]||s.course}</td><td class="px-5 py-3 capitalize">${s.level}</td><td class="px-5 py-3 font-bold">${s.score}/10</td><td class="px-5 py-3"><span class="badge-${s.passed?"pass":"fail"} text-xs font-bold px-2.5 py-1 rounded-full">${s.passed?"✓ Passed":"✗ Not yet"}</span></td><td class="px-5 py-3 text-slate-400">${fmt(s.submitted_at)}</td></tr>`).join("")}</tbody></table></div>`;
+  }catch(e){document.getElementById("dash-body").innerHTML=`<div class="px-6 py-10 text-center text-slate-400 text-sm">Could not load. Check connection.</div>`;}
+}
+
+/* ========================================================
+   NAV EVENTS
+   ======================================================== */
+navEl.addEventListener("click",e=>{
+  const btn=e.target.closest("[data-lab]");if(!btn)return;
+  if(btn.dataset.locked==="1"){showToast("That course isn't in your plan. Upgrade from your GSBS Tutor dashboard.");return;}
+  activeId=btn.dataset.lab;renderNav();renderLab();
+});
+document.getElementById("dashBtn").addEventListener("click",()=>{document.getElementById("navWrap").classList.add("hidden");renderDashboard();});
+document.getElementById("lbBtn").addEventListener("click",()=>{document.getElementById("navWrap").classList.add("hidden");renderLeaderboard();});
+
+function showToast(msg,dur=3000,bg="#0f172a"){
+  let t=document.getElementById("toast");
+  if(!t){t=document.createElement("div");t.id="toast";t.className="fixed left-1/2 -translate-x-1/2 bottom-6 z-[60] text-white text-sm px-4 py-2.5 rounded-xl shadow-lg max-w-[90vw] text-center transition-opacity duration-200";t.style.opacity="0";document.body.appendChild(t);}
+  t.style.background=bg;t.textContent=msg;t.style.opacity="1";clearTimeout(t._h);t._h=setTimeout(()=>{t.style.opacity="0";},dur);
+}
+
+/* ========================================================
+   CHATBOT
+   ======================================================== */
+const HELP={
+  web:{intro:"You're building an HTML &lt;h1&gt; heading that says Hello World.",hints:{primary:["Tap the orange &lt;h1&gt; block first — that opens the heading.","Then tap 'Hello World', then tap &lt;/h1&gt; to close it.","Tap &lt;h1&gt; → Hello World → &lt;/h1&gt; in that exact order. Watch the live preview!"],secondary:["Type in the code editor — the preview pane shows what a browser renders in real time.","You need an opening tag &lt;h1&gt; and a closing tag &lt;/h1&gt;.","Type exactly: &lt;h1&gt;Hello World&lt;/h1&gt; — watch the big bold text appear in the preview!"]},example:"&lt;h1&gt;Hello World&lt;/h1&gt; displays 'Hello World' as the biggest text on the page.",faq:[{keys:["h1","tag","heading"],answer:"&lt;h1&gt; opens the heading, &lt;/h1&gt; closes it. Put your words between them."},{keys:["preview","live"],answer:"The preview updates every time you tap a block or type a character — it's like a real browser!"}]},
+  code:{intro:"You're making a loop that repeats a task automatically.",hints:{primary:["Tap 'When Clicked' first — that's what starts the program.","Then tap 'Move Forward' — that's what the robot does.","'When Clicked' then 'Move Forward' — watch the robot walk!"],secondary:["Type in the editor and press ▶ Run to see the output.","A loop: for i in range(5): then print(i) on the next line (indented with 4 spaces).","Try typing: for i in range(5):\n    print(i) — then press ▶ Run!"]},example:"for i in range(3): with print(i) prints 0, then 1, then 2.",faq:[{keys:["range"],answer:"range(5) produces 0,1,2,3,4 — five numbers starting at zero."},{keys:["indent","space","tab"],answer:"Indent the print() line with 4 spaces — Python uses indentation to group code inside a loop."}]},
+  design:{intro:"You're practising colour contrast for readable designs.",hints:{primary:["Tap each card and watch the flyer change live.","Look for the biggest brightness difference between text and background.","Tap the deep purple + yellow card — that's the strongest contrast!"],secondary:["Drag the colour pickers — the flyer repaints in real time.","The meter turns green at 4.5:1 — that's your target.","Try a very dark background (like #1e1b4b) with bright text (like #facc15)."]},example:"White text on dark navy has very high contrast — easy to read anywhere.",faq:[{keys:["contrast","ratio","meter"],answer:"Contrast ratio measures brightness difference. 4.5:1 is readable; 7:1 is excellent. The meter turns green when you hit the target."},{keys:["colour","color","picker"],answer:"Drag the colour pickers and watch the flyer change live. The meter updates instantly!"}]},
+  social:{intro:"You're writing a hook-filled advert that grabs attention.",hints:{primary:["Tap each headline and see it on the phone screen live.","The best one promises value — something FREE or exciting.","Tap the headline with FREE and BEST — those are hook words."],secondary:["Type in the text box — the hook counter updates as you write.","Include one of these: free, discount, best, promo, sale, deal.","Write 3 sentences: grab attention → make the offer → tell them what to do."]},example:"'Hungry? Get the BEST jollof in Lagos — FREE delivery today only!'",faq:[{keys:["hook","keyword"],answer:"Hook words promise value: free, discount, best, promo, sale, deal, offer. They make thumbs stop scrolling."},{keys:["sentence","three","3"],answer:"Aim for 3 short sentences: 1) grab attention, 2) state the offer, 3) tell them what to do next."}]},
+  finance:{intro:"You're learning to save 10% of income before spending.",hints:{primary:["10% means one tenth. Divide ₦50,000 by 10.","₦50,000 ÷ 10 = ₦5,000. That's the savings pile.","Tap the ₦5,000 pile — watch the budget update!"],secondary:["Type the numbers and watch the live calculator update.","10% of ₦50,000 = ₦50,000 ÷ 10 = ₦5,000.","Savings = ₦5,000. Leftover = ₦50,000 − ₦5,000 = ₦45,000."]},example:"If income is ₦100,000: 10% savings = ₦10,000, leftover = ₦90,000.",faq:[{keys:["10%","percent","percentage"],answer:"10% just means ÷ 10. ₦50,000 ÷ 10 = ₦5,000. Simple!"},{keys:["leftover","balance","remaining"],answer:"Leftover = income minus savings. ₦50,000 − ₦5,000 = ₦45,000."}]}
+};
+let chatStarted=false;const chatHintIdx={};
+function cleanH(h){return h.replace(/<[^>]+>/g,"").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");}
+
+function initChat(){
+  const wrap=document.createElement("div");
+  wrap.innerHTML=`
+    <button id="chatFab" aria-label="Lab Helper" class="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full text-white shadow-xl flex items-center justify-center text-2xl" style="background:var(--accent)">💬</button>
+    <div id="chatPanel" class="hidden fixed bottom-4 right-4 z-50 w-[calc(100vw-2rem)] sm:w-[380px] max-h-[80vh] sm:h-[540px] bg-white rounded-3xl border border-slate-200 flex flex-col overflow-hidden">
+      <div class="px-4 py-3 text-white flex items-center justify-between" style="background:var(--accent)">
+        <div class="flex items-center gap-2.5"><span class="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center text-xl">🤖</span>
+          <div><p class="font-bold text-sm">Lab Helper</p><p id="chatCourse" class="text-[11px] text-white/80">Always here</p></div></div>
+        <button id="chatClose" class="h-8 w-8 rounded-full hover:bg-white/20 flex items-center justify-center text-xl">&times;</button>
+      </div>
+      <div id="chatLog" class="flex-1 overflow-y-auto p-3 space-y-2.5 bg-slate-50"></div>
+      <div id="chatChips" class="px-3 pt-2 flex flex-wrap gap-1.5 bg-white"></div>
+      <div class="p-3 flex items-center gap-2 bg-white border-t border-slate-100">
+        <input id="chatInput" type="text" placeholder="Ask anything…" class="field flex-1 rounded-xl border-2 border-slate-200 bg-slate-50 py-2.5 px-3 text-sm"/>
+        <button id="chatSend" class="h-10 w-10 shrink-0 rounded-xl text-white flex items-center justify-center text-lg" style="background:var(--accent)">➤</button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const panel=document.getElementById("chatPanel"),fab=document.getElementById("chatFab");
+  fab.addEventListener("click",()=>{panel.classList.remove("hidden");fab.classList.add("hidden");if(!chatStarted)chatGreet();});
+  document.getElementById("chatClose").addEventListener("click",()=>{panel.classList.add("hidden");fab.classList.remove("hidden");});
+  document.getElementById("chatSend").addEventListener("click",chatSubmit);
+  document.getElementById("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")chatSubmit();});
+  renderChips();
+}
+function renderChips(){const c=document.getElementById("chatChips");if(!c)return;c.innerHTML=[["💡 Hint","hint"],["👀 Example","example"],["📘 Rule","rule"],["😵 Stuck","stuck"],["🏆 My XP","xp"]].map(([l,i])=>`<button data-intent="${i}" class="chat-chip text-xs font-semibold rounded-full px-3 py-1 bg-white text-slate-600">${l}</button>`).join("");c.querySelectorAll("[data-intent]").forEach(b=>b.addEventListener("click",()=>{if(!chatStarted)chatGreet();const label={hint:"Give me a hint",example:"Show me an example",rule:"Explain the rule",stuck:"I'm totally stuck",xp:"How much XP do I have?"}[b.dataset.intent];chatPush("user",label);setTimeout(()=>chatPush("bot",chatIntent(b.dataset.intent)),220);}));}
+function chatGreet(){chatStarted=true;const kb=HELP[activeId];chatPush("bot",`Hi${STUDENT?" "+STUDENT:""}! 👋 ${cleanH(kb.intro)}`);chatPush("bot","Tap a button or type any question. I'll help you level up! ⚡");}
+function chatPush(role,text){const log=document.getElementById("chatLog");const row=document.createElement("div");row.className="flex "+(role==="user"?"justify-end":"justify-start");const b=document.createElement("div");b.className=(role==="user"?"chat-bubble-user":"chat-bubble-bot")+" max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap";b.textContent=cleanH(text);row.appendChild(b);log.appendChild(row);log.scrollTop=log.scrollHeight;}
+function chatSubmit(){const i=document.getElementById("chatInput");const v=(i.value||"").trim();if(!v)return;if(!chatStarted)chatStarted=true;chatPush("user",v);i.value="";setTimeout(()=>chatPush("bot",chatReply(v)),220);}
+function curHints(kb){return kb.hints[LVL]||kb.hints.secondary;}
+function nextHint(kb){const arr=curHints(kb);const i=chatHintIdx[activeId]||0;const h=arr[Math.min(i,arr.length-1)];chatHintIdx[activeId]=Math.min(i+1,arr.length-1);const pre=i===0?"Here's your first hint: ":(i>=arr.length-1?"Final nudge: ":"Next hint: ");return pre+h;}
+function chatIntent(intent){const kb=HELP[activeId];if(intent==="example")return kb.example;if(intent==="rule")return cleanH(labById(activeId).principle);if(intent==="xp")return `You have ${XP} XP — Level ${getLevel(XP)}! 🏆 You've cleared ${CLEARED_IDS.size} labs and your streak is ${STREAK} day${STREAK===1?"":"s"}. Keep going!`;return nextHint(kb);}
+function chatReply(t){const kb=HELP[activeId];const tl=t.toLowerCase();
+  if(/^(hi|hello|hey|yo)/.test(tl))return`Hi${STUDENT?" "+STUDENT:""}! You have ${XP} XP and a ${STREAK}-day streak. Let's earn more! 💪`;
+  if(/(thank|thanks|got it|yes|great|nice|awesome|cool)/.test(tl))return["You've got this — keep going! 🚀","That's the spirit! 💪","Amazing mindset! Now go pass that lab!"][Math.floor(Math.random()*3)];
+  if(/(xp|level|score|points|streak)/.test(tl))return`You have ${XP} XP, you're Level ${getLevel(XP)}, and your streak is ${STREAK} day${STREAK===1?"":"s"}! ${XP<100?"Keep going — 100 XP unlocks the XP Hunter badge!":"You're crushing it! 🏆"}`;
+  if(/(badge|achievement|unlock)/.test(tl))return`You've unlocked ${UNLOCKED_BADGES.size} of ${BADGES.length} badges. Keep completing labs to unlock more! 🏅`;
+  if(/(example|sample|show me)/.test(tl))return kb.example;
+  if(/(why|rule|explain|principle)/.test(tl))return cleanH(labById(activeId).principle);
+  if(/(answer|solution|tell me|cheat)/.test(tl)){const arr=curHints(kb);chatHintIdx[activeId]=arr.length-1;return"I know you can figure it out! But here's my biggest nudge: "+arr[arr.length-1];}
+  for(const f of kb.faq){if(f.keys.some(k=>tl.includes(k)))return f.answer;}
+  if(/(hint|clue|tip|stuck|lost|confused|help|hard|don.?t|idk)/.test(tl))return nextHint(kb);
+  return["Great question! Want a hint, example, or rule explanation? Tap above.","I'm here to help! Try tapping '💡 Hint' or '👀 Example'.","Not sure what you mean — but I can give you a hint! Tap '💡 Hint'."][Math.floor(Math.random()*3)];}
+function chatOnLabChange(){const el=document.getElementById("chatCourse");if(el)el.textContent="Helping with "+labById(activeId).name+" | "+XP+" XP";}
+
+/* ========================================================
+   ACCESS GATE
+   ======================================================== */
+const GSBS={portal:"https://tutor.gsbsgroup.com",allowed:["https://tutor.gsbsgroup.com","https://www.tutor.gsbsgroup.com"]};
+function cameFromPortal(){
+  try{if(document.referrer&&GSBS.allowed.includes(new URL(document.referrer).origin))return true;}catch(e){}
+  try{const a=window.location.ancestorOrigins;if(a)for(let i=0;i<a.length;i++)if(GSBS.allowed.includes(a[i]))return true;}catch(e){}
+  try{if(new URLSearchParams(location.search).get("gsbs")==="ok")return true;}catch(e){}
+  return false;
+}
+function persistAccess(){try{const u=new URL(location.href);u.searchParams.set("gsbs","ok");history.replaceState(null,"",u.pathname+u.search);}catch(e){}}
+
+/* ========================================================
+   LEADERBOARD API
+   ======================================================== */
+// api/leaderboard.js reads top scores from Supabase
+
+/* ========================================================
+   BOOT
+   ======================================================== */
+function boot(){
+  if(!cameFromPortal())return;
+  if(!LVL){
+    document.getElementById("gateWrap").innerHTML=`<div class="relative z-10 text-center max-w-md mx-auto px-4"><div class="text-6xl mb-5">🤖</div><h1 class="display text-3xl font-extrabold text-white mb-4">GSBS Tutor Skill Lab</h1><div class="bg-white/10 border border-white/20 rounded-3xl p-7 text-white"><p class="text-xl font-bold mb-2">⚠️ Missing level</p><p class="text-white/75 text-sm leading-relaxed mb-5">Your link must include a level. Ask your teacher for a link with <code class="bg-white/20 px-1 rounded">?level=primary</code> or <code class="bg-white/20 px-1 rounded">?level=secondary</code>.</p><a href="${GSBS.portal}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-6 py-3 rounded-2xl">Back to dashboard →</a></div></div>`;
+    return;
+  }
+  persistAccess();
+  document.getElementById("gateWrap").classList.add("hidden");
+  document.getElementById("appShell").classList.remove("hidden");
+  ["xpBox","lvlBox","streakBox","dashBtn","lbBtn","progressBox","xpBarWrap"].forEach(id=>document.getElementById(id).classList.remove("hidden"));
+  document.getElementById("levelBadge").classList.remove("hidden");
+  document.getElementById("levelBadge").textContent=LVL==="primary"?"🧸 Primary":"⚡ Secondary";
+  const cn=ENTITLED?labById(ENTITLED).name:"All courses";
+  document.getElementById("heroSub").textContent=(STUDENT?"Hi "+STUDENT+" · ":"")+cn+" · "+(LVL==="primary"?"🧸 Primary":"⚡ Secondary")+" Practical Lab";
+  document.getElementById("progressDenom").textContent="/"+(ENTITLED?1:LABS.length);
+  document.getElementById("progressCount").textContent=CLEARED_IDS.size;
+  updateXPUI();
+  renderBadges();
+  renderNav();
+  renderDailyBanner();
+  renderLab();
+  initChat();
+}
+boot();
+</script>
+
+  <!-- PWA offline banner -->
+  <div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1e1b4b;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;">
+    📵 You're offline — all labs still work! Saves will sync when you reconnect.
+    <button onclick="document.getElementById('offlineBanner').style.display='none'" style="margin-left:12px;background:rgba(255,255,255,.2);border:none;color:#fff;padding:3px 10px;border-radius:20px;cursor:pointer;font-size:12px;">✕</button>
+  </div>
+
+  <!-- PWA install prompt -->
+  <div id="installPrompt" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9998;background:#312e81;color:#fff;border-radius:16px;padding:14px 20px;font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.4);white-space:nowrap;">
+    📲 Add Skill Lab to your home screen
+    <button id="installAccept" style="margin-left:10px;background:#fde68a;color:#1e1b4b;border:none;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;">Install</button>
+    <button onclick="document.getElementById('installPrompt').style.display='none'" style="margin-left:6px;background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:20px;cursor:pointer;font-size:12px;">Not now</button>
+  </div>
+
+  <script>
+  /* ========================================================
+     PWA: Service Worker + Offline Banner + Install Prompt
+     ======================================================== */
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js")
+        .then(reg => {
+          console.log("[SW] Registered, scope:", reg.scope);
+          // Check for updates every 60 minutes
+          setInterval(() => reg.update(), 60 * 60 * 1000);
+        })
+        .catch(err => console.warn("[SW] Registration failed:", err));
+    });
+  }
+
+  /* Offline / online banner */
+  function handleOnlineStatus(){
+    const banner = document.getElementById("offlineBanner");
+    if(!banner) return;
+    if(!navigator.onLine){
+      banner.style.display = "block";
+      // push content down so banner doesn't overlap
+      document.body.style.paddingTop = "44px";
+    } else {
+      banner.style.display = "none";
+      document.body.style.paddingTop = "";
+    }
+  }
+  window.addEventListener("online",  handleOnlineStatus);
+  window.addEventListener("offline", handleOnlineStatus);
+  // Check immediately on load
+  if(!navigator.onLine) handleOnlineStatus();
+
+  /* PWA install prompt (A2HS) */
+  let _deferredInstall = null;
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    _deferredInstall = e;
+    // Show our custom prompt after 30 seconds on the page
+    setTimeout(() => {
+      const p = document.getElementById("installPrompt");
+      if(p) p.style.display = "block";
+    }, 30000);
+  });
+  const installBtn = document.getElementById("installAccept");
+  if(installBtn){
+    installBtn.addEventListener("click", async () => {
+      const p = document.getElementById("installPrompt");
+      if(p) p.style.display = "none";
+      if(!_deferredInstall) return;
+      _deferredInstall.prompt();
+      const { outcome } = await _deferredInstall.userChoice;
+      console.log("[PWA] Install outcome:", outcome);
+      _deferredInstall = null;
+    });
+  }
+  window.addEventListener("appinstalled", () => {
+    console.log("[PWA] App installed");
+    _deferredInstall = null;
+  });
+  </script>
+
+</body>
+</html>

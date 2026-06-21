@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#312e81"/>
+  <rect x="80" y="60" width="352" height="392" rx="32" fill="#4c1d95"/>
+  <!-- beaker body -->
+  <path d="M192 80h128v130l90 180a40 40 0 0 1-36 58H138a40 40 0 0 1-36-58l90-180V80z" fill="none" stroke="#fde68a" stroke-width="22" stroke-linejoin="round"/>
+  <line x1="192" y1="80" x2="320" y2="80" stroke="#fde68a" stroke-width="22" stroke-linecap="round"/>
+  <line x1="168" y1="290" x2="344" y2="290" stroke="#fde68a" stroke-width="18" stroke-linecap="round"/>
+  <!-- bubbles -->
+  <circle cx="210" cy="340" r="18" fill="#34d399"/>
+  <circle cx="270" cy="370" r="12" fill="#60a5fa"/>
+  <circle cx="310" cy="330" r="16" fill="#fb7185"/>
+</svg>
