@@ -1017,16 +1017,74 @@ function chatReply(t){const kb=HELP[activeId];const tl=t.toLowerCase();
 function chatOnLabChange(){const el=document.getElementById("chatCourse");if(el)el.textContent="Helping with "+labById(activeId).name+" | "+XP+" XP";}
 
 /* ========================================================
-   ACCESS GATE
+   ACCESS GATE — signed JWT token (primary) + referrer fallback
    ======================================================== */
-const GSBS={portal:"https://tutor.gsbsgroup.com",allowed:["https://tutor.gsbsgroup.com","https://www.tutor.gsbsgroup.com"]};
-function cameFromPortal(){
+const GSBS={
+  portal:"https://tutor.gsbsgroup.com",
+  allowed:["https://tutor.gsbsgroup.com","https://www.tutor.gsbsgroup.com","https://lab.gsbsgroup.com","https://www.lab.gsbsgroup.com"]
+};
+
+/* Referrer / ancestor fallback (keeps working during migration) */
+function referrerOK(){
   try{if(document.referrer&&GSBS.allowed.includes(new URL(document.referrer).origin))return true;}catch(e){}
   try{const a=window.location.ancestorOrigins;if(a)for(let i=0;i<a.length;i++)if(GSBS.allowed.includes(a[i]))return true;}catch(e){}
   try{if(new URLSearchParams(location.search).get("gsbs")==="ok")return true;}catch(e){}
   return false;
 }
-function persistAccess(){try{const u=new URL(location.href);u.searchParams.set("gsbs","ok");history.replaceState(null,"",u.pathname+u.search);}catch(e){}}
+
+/* Verify JWT token with /api/verify, then boot */
+async function verifyAndBoot(){
+  const token=params.get("token");
+
+  /* No token — fall back to referrer check */
+  if(!token){
+    if(referrerOK()) return boot(null);
+    return; // gate stays visible
+  }
+
+  /* Show a loading state while we verify */
+  const gateCard=document.getElementById("gateCard");
+  if(gateCard) gateCard.innerHTML=`<div class="text-center py-6"><div class="text-3xl mb-3 animate-pulse">🔐</div><p class="text-white/80 text-sm">Verifying your access…</p></div>`;
+
+  try{
+    const resp=await fetch("/api/verify?token="+encodeURIComponent(token));
+    const data=await resp.json();
+
+    if(data.ok){
+      /* Token valid — override URL params with token payload */
+      if(data.name   && !params.get("name"))   params.set("name",   data.name);
+      if(data.course && !params.get("course")) params.set("course", data.course);
+      if(data.level  && !params.get("level"))  params.set("level",  data.level);
+      return boot(token);
+    }
+
+    /* Token invalid or expired */
+    if(gateCard) gateCard.innerHTML=`
+      <div class="text-center py-4">
+        <div class="text-3xl mb-3">${data.expired?"⏰":"🔒"}</div>
+        <p class="text-white font-bold mb-2">${data.expired?"Session Expired":"Access Denied"}</p>
+        <p class="text-white/75 text-sm mb-5">${data.error||"Please return to your dashboard."}</p>
+        <a href="${GSBS.portal}" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-6 py-3 rounded-2xl hover:bg-slate-100 transition">
+          Return to Dashboard →
+        </a>
+      </div>`;
+  }catch(e){
+    /* /api/verify unreachable — fall back to referrer check */
+    console.warn("[gate] verify failed, falling back to referrer check:", e);
+    if(referrerOK()) return boot(null);
+  }
+}
+
+function persistAccess(token){
+  try{
+    const u=new URL(location.href);
+    u.searchParams.set("gsbs","ok");
+    /* Keep token in URL so refresh still works within 4h */
+    if(token) u.searchParams.set("token",token);
+    history.replaceState(null,"",u.pathname+u.search);
+  }catch(e){}
+}
 
 /* ========================================================
    LEADERBOARD API
@@ -1036,8 +1094,15 @@ function persistAccess(){try{const u=new URL(location.href);u.searchParams.set("
 /* ========================================================
    BOOT
    ======================================================== */
-function boot(){
-  if(!cameFromPortal())return;
+function boot(token){
+  // Rebuild ENTITLED / LVL / STUDENT from params (may have been updated by token payload)
+  const _course = COURSE_ALIASES[(params.get("course")||"").toLowerCase().trim()]||null;
+  const _level  = (params.get("level")||params.get("lvl")||"").toLowerCase().trim();
+  const _student = (params.get("name")||"").trim().slice(0,40)||gs("name","");
+  if(_course) { Object.defineProperty(window,"ENTITLED",{value:_course,writable:true,configurable:true}); }
+  if(_level)  { Object.defineProperty(window,"LVL",{value:_level,writable:true,configurable:true}); }
+  if(_student){ ss("name",_student); }
+  persistAccess(token);
   if(!LVL){
     document.getElementById("gateWrap").innerHTML=`<div class="relative z-10 text-center max-w-md mx-auto px-4"><div class="text-6xl mb-5">🤖</div><h1 class="display text-3xl font-extrabold text-white mb-4">GSBS Tutor Skill Lab</h1><div class="bg-white/10 border border-white/20 rounded-3xl p-7 text-white"><p class="text-xl font-bold mb-2">⚠️ Missing level</p><p class="text-white/75 text-sm leading-relaxed mb-5">Your link must include a level. Ask your teacher for a link with <code class="bg-white/20 px-1 rounded">?level=primary</code> or <code class="bg-white/20 px-1 rounded">?level=secondary</code>.</p><a href="${GSBS.portal}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-6 py-3 rounded-2xl">Back to dashboard →</a></div></div>`;
     return;
@@ -1059,7 +1124,7 @@ function boot(){
   renderLab();
   initChat();
 }
-boot();
+verifyAndBoot();
 </script>
 
   <!-- PWA offline banner -->

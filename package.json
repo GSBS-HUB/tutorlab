@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "GSBS Tutor Skill Lab — practical section",
   "dependencies": {
-    "@supabase/supabase-js": "^2.43.0"
+    "@supabase/supabase-js": "^2.43.0",
+    "jsonwebtoken": "^9.0.2"
   }
 }
