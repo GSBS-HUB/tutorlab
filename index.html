@@ -158,7 +158,7 @@
     <div class="inline-flex items-center gap-2 bg-white/15 border border-white/25 text-white text-xs font-semibold px-4 py-2 rounded-full mb-5">
       <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>GSBS Tutor · Practical Section
     </div>
-    <h1 class="display text-4xl sm:text-6xl font-extrabold text-white leading-[1.05] mb-4">Welcome to<br><span class="text-transparent bg-clip-text" style="background:linear-gradient(90deg,#fde68a,#fb7185,#a78bfa)">Skill Lab</span></h1>
+    <h1 class="display text-4xl sm:text-6xl font-extrabold text-white leading-[1.05] mb-4">Welcome to<br><span style="color:#fde68a">Skill Lab</span></h1>
     <p class="text-white/75 text-base sm:text-lg mb-6 max-w-lg mx-auto leading-relaxed">Earn XP, unlock badges, climb the leaderboard — and learn real vocational skills while you do it.</p>
     <div class="flex flex-wrap justify-center gap-2 mb-8">
       <span class="bg-blue-500/30 border border-blue-400/40 text-blue-100 text-xs font-semibold px-3 py-1.5 rounded-full">💻 Web Design</span>
@@ -244,9 +244,7 @@
       </div>
       <h1 class="display text-3xl sm:text-5xl font-extrabold text-white leading-[1.08] mb-4">
         Welcome to<br/>
-        <span class="text-transparent bg-clip-text" style="background:linear-gradient(90deg,#fde68a,#fb7185,#a78bfa)">
-          GSBS Skill Lab
-        </span>
+        <span style="color:#fde68a">GSBS</span> <span style="color:#fb7185">Skill</span> <span style="color:#a78bfa">Lab</span>
       </h1>
       <p id="welcomeSub" class="text-white/75 text-sm sm:text-base max-w-lg mx-auto leading-relaxed mb-8">
         Pick a lab and start practising. Earn XP, unlock badges, and climb the leaderboard!
@@ -1080,9 +1078,18 @@ const GSBS={
 
 /* Referrer / ancestor fallback (keeps working during migration) */
 function referrerOK(){
+  // Check referrer
   try{if(document.referrer&&GSBS.allowed.includes(new URL(document.referrer).origin))return true;}catch(e){}
+  // Check iframe ancestor
   try{const a=window.location.ancestorOrigins;if(a)for(let i=0;i<a.length;i++)if(GSBS.allowed.includes(a[i]))return true;}catch(e){}
-  try{if(new URLSearchParams(location.search).get("gsbs")==="ok")return true;}catch(e){}
+  // Check URL params — any of these means student came from dashboard
+  try{
+    const p=new URLSearchParams(location.search);
+    if(p.get("gsbs")==="ok") return true;
+    if(p.get("level")||p.get("lvl")) return true;
+    if(p.get("course")) return true;
+    if(p.get("token")) return true;
+  }catch(e){}
   return false;
 }
 
