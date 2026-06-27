@@ -105,6 +105,18 @@ primary and secondary students see different wording, examples, and tasks for th
     14px → 16px title), and the mobile-only mascot from text-2xl to text-3xl (24px →
     30px). Still fits cleanly alongside the stat pills with no overflow.
 
+12. **Fixed: deployed updates not showing up on the live site.** The service worker
+    (`sw.js`) cached `index.html` under a hardcoded name (`gsbs-lab-v1`) using a
+    Cache-First strategy — meaning once a browser had visited the site once, it would
+    keep serving that exact cached copy forever, even after a brand-new Vercel deploy,
+    even in a fresh incognito window. The cache name never changed between deploys, so
+    the "delete old caches" cleanup never actually triggered. Fixed two ways: the cache
+    name was bumped (`gsbs-lab-v2`) to force a one-time cleanup of the stale cache, and
+    `index.html`/page navigations now use Network-First instead of Cache-First, so every
+    future deploy is picked up on next load automatically — falling back to the cached
+    copy only when the device is genuinely offline, which preserves the "works offline"
+    behaviour without ever going stale again.
+
 ---
 
 ## Fix for Vercel framework error

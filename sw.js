@@ -1,12 +1,14 @@
 /* ============================================================
    GSBS Tutor Skill Lab — Service Worker
    Strategy:
-   - App shell (index.html, manifest) → Cache First, always fresh on install
+   - App shell (index.html, navigations) → Network First, falls back to
+     cache only when offline, so deployed updates show up immediately
    - Tailwind CDN → Cache First (stale-while-revalidate)
    - /api/* → Network First, fall back to offline response
+   - Everything else (icons, manifest) → Cache First, fall back to network
    ============================================================ */
 
-const CACHE_NAME = "gsbs-lab-v1";
+const CACHE_NAME = "gsbs-lab-v2";
 const OFFLINE_API = JSON.stringify({ ok: false, offline: true, message: "You are offline. Your work is saved on this device and will sync when you reconnect." });
 
 const APP_SHELL = [
@@ -71,6 +73,20 @@ self.addEventListener("fetch", event => {
         }).catch(() => cached);
         return cached || fetchPromise;
       })
+    );
+    return;
+  }
+
+  /* Navigations / index.html → Network First, so deployed updates are
+     picked up immediately. Falls back to cache only when offline. */
+  if (event.request.mode === "navigate" || url.pathname === "/" || url.pathname === "/index.html") {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response && response.status === 200) {
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+        }
+        return response;
+      }).catch(() => caches.match(event.request).then(cached => cached || caches.match("/index.html")))
     );
     return;
   }
