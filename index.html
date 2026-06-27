@@ -1671,12 +1671,41 @@ verifyAndBoot();
      PWA: Service Worker + Offline Banner + Install Prompt
      ======================================================== */
   if("serviceWorker" in navigator){
+    // If a new SW takes control while this page is open, the page is
+    // still running the OLD cached JS/HTML in memory. Reload once so the
+    // tab actually picks up the new version instead of looking "stuck".
+    let swRefreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (swRefreshing) return;
+      swRefreshing = true;
+      window.location.reload();
+    });
+
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js")
         .then(reg => {
           console.log("[SW] Registered, scope:", reg.scope);
-          // Check for updates every 60 minutes
+
+          // Force an update check immediately on every load, instead of
+          // waiting up to 60 minutes to notice a fresh deploy.
+          reg.update();
+          // Keep checking periodically too, in case the tab is left open.
           setInterval(() => reg.update(), 60 * 60 * 1000);
+
+          // If an update was already found and is waiting, activate it now
+          // rather than waiting for the next navigation.
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: "SKIP_WAITING" });
+          }
+          reg.addEventListener("updatefound", () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener("statechange", () => {
+              if (newWorker.state === "installed" && reg.waiting) {
+                newWorker.postMessage({ type: "SKIP_WAITING" });
+              }
+            });
+          });
         })
         .catch(err => console.warn("[SW] Registration failed:", err));
     });

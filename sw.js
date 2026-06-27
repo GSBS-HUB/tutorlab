@@ -8,7 +8,7 @@
    - Everything else (icons, manifest) → Cache First, fall back to network
    ============================================================ */
 
-const CACHE_NAME = "gsbs-lab-v2";
+const CACHE_NAME = "gsbs-lab-v3";
 const OFFLINE_API = JSON.stringify({ ok: false, offline: true, message: "You are offline. Your work is saved on this device and will sync when you reconnect." });
 
 const APP_SHELL = [
@@ -22,6 +22,14 @@ const APP_SHELL = [
 const CDN_URLS = [
   "https://cdn.tailwindcss.com"
 ];
+
+/* ---------- MESSAGE: let the page force this worker to activate now,
+   instead of waiting for all old tabs to close ---------- */
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 /* ---------- INSTALL: cache the app shell ---------- */
 self.addEventListener("install", event => {
